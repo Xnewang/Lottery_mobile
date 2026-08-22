@@ -1,17 +1,9 @@
 @echo off
 chcp 65001 >nul
-echo ========================================
-echo   澳门六合彩AI助手 - 启动中...
-echo ========================================
-echo.
-
+set "PYTHON=C:\Users\17497\.workbuddy\binaries\python\versions\3.13.12\python.exe"
 cd /d "%~dp0server"
-
-echo 正在安装依赖...
-pip install -r requirements.txt -q
-
+echo Installing/checking dependencies...
+"%PYTHON%" -m pip install -r requirements.txt -q
 echo.
-echo 启动服务...
-python app.py
-
-pause
+echo Starting server... open http://localhost:5000
+"%PYTHON%" app.py

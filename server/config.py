@@ -9,25 +9,25 @@ import os
 # ============================================================
 # 硅基流动 API 配置（从环境变量读取）
 # ============================================================
-SILICONFLOW_API_KEY = os.environ.get('SILICONFLOW_API_KEY', 'your_api_key_here')
-SILICONFLOW_API_URL = os.environ.get('SILICONFLOW_API_URL', 'https://api.siliconflow.cn/v1/chat/completions')
+SILICONFLOW_API_KEY = os.environ.get('SILICONFLOW_API_KEY', 'sk-85f358600ca4401bd532437e07dd82f3e9dedce56fcb9ebd6bcbf8e6646903db')
+SILICONFLOW_API_URL = os.environ.get(
+    'SILICONFLOW_API_URL',
+    'https://api.dcprwo.cc.cd'
+)
 
 # ============================================================
 # AI 模型列表
+# 每个模型可选配置 api_url / api_key；不配则用 SILICONFLOW 默认端点
 # ============================================================
 AI_MODELS = [
-    {"id": "Qwen/Qwen2.5-72B-Instruct", "name": "Qwen2.5-72B", "free": True},
-    {"id": "zai-org/GLM-4.6", "name": "GLM-4.6", "free": False},
-    {"id": "moonshotai/Kimi-K2-Thinking", "name": "Kimi-K2", "free": False},
-    {"id": "deepseek-ai/DeepSeek-V3.2", "name": "DeepSeek-V3.2", "free": False},
-    {"id": "Pro/MiniMaxAI/MiniMax-M2.5", "name": "MiniMax-M2.5", "free": False},
+    {"id": "gpt-5.5", "name": "GPT-5.5", "free": False},
 ]
 
 # ============================================================
 # 数据源配置（只需要 history API，无需先获取最新期号）
 # ============================================================
 HISTORY_API_BASE = 'https://history.macaumarksix.com/history/macaujc2/expect/'
-MACAUJC_API_URL = 'https://history.macaumarksix.com/history/macaujc2/y/2026'
+MACAUJC_API_URL = 'https://history.macaumarksix.com/history/macaujc2/y/{year}'
 
 # ============================================================
 # 农历新年日期（用于动态计算生肖）

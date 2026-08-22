@@ -1,0 +1,11 @@
+# 依赖（前端 npm 包，体积大且可重装，不应入 git）
+node_modules/
+
+# 前端构建产物（可由 npm run build 重新生成）
+dist/
+
+# Python
+__pycache__/
+*.pyc
+.env
+venv/

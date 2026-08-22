@@ -148,12 +148,12 @@ class LotteryScraper:
                 'total': len(self._cache),
             }
 
-        # 策略1: 日期计算 + history API 并发拉取
-        draws, source = self._fetch_via_history(count)
+        # 策略1: 按年份批量 history API
+        draws, source = self._fetch_via_macaujc()
 
-        # 策略2: macaujc.org 批量 API
+        # 策略2: 按期号逐条 history API
         if not draws:
-            draws, source = self._fetch_via_macaujc()
+            draws, source = self._fetch_via_history(count)
 
         # 策略3: 模拟数据
         if not draws:
@@ -333,26 +333,30 @@ class LotteryScraper:
             logger.debug("解析 history 记录失败: %s", e)
             return None
 
-    # ========== 策略2: macaujc.org ==========
+    # ========== 策略1: 按年份批量 history API ==========
 
     def _fetch_via_macaujc(self):
         logger.info("=" * 50)
-        logger.info("策略2: 尝试 macaujc.org 批量 API")
+        logger.info("策略1: 请求按年份 history API")
         logger.info("=" * 50)
 
         for attempt in range(1, REQUEST_RETRIES + 1):
-            logger.info("尝试 macaujc.org (第%d/%d次)", attempt, REQUEST_RETRIES)
+            year = datetime.now().year
+            url = MACAUJC_API_URL.format(year=year)
+            logger.info("请求 %s (第%d/%d次)", url, attempt, REQUEST_RETRIES)
             try:
-                resp = self.session.get(MACAUJC_API_URL, timeout=REQUEST_TIMEOUT)
+                resp = self.session.get(url, timeout=REQUEST_TIMEOUT)
                 if resp.status_code != 200:
-                    logger.warning("macaujc.org HTTP %d", resp.status_code)
+                    logger.warning("history API HTTP %d", resp.status_code)
                     if resp.status_code in (504, 503) and attempt < REQUEST_RETRIES:
                         time.sleep(3)
                         continue
                     break
 
                 data = resp.json()
-                if isinstance(data, dict) and data.get('code') == 0:
+                if isinstance(data, dict) and (
+                    data.get('code') in (0, 200) or data.get('result') is True
+                ):
                     items = data.get('data', [])
                     draws = []
                     for item in items:
@@ -361,11 +365,11 @@ class LotteryScraper:
                             draws.append(draw)
                     if draws:
                         draws.sort(key=lambda x: x['period'], reverse=True)
-                        logger.info("macaujc.org 获取到 %d 条数据", len(draws))
-                        return draws, 'macaujc.org (实时数据)'
+                        logger.info("history API 获取到 %d 条数据", len(draws))
+                        return draws, 'history.macaumarksix.com (按年份实时数据)'
 
             except Exception as e:
-                logger.error("macaujc.org 异常: %s", e)
+                logger.error("history API 异常: %s", e)
                 if attempt < REQUEST_RETRIES:
                     time.sleep(2)
 

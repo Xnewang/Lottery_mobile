@@ -25,6 +25,16 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__, template_folder='templates')
 CORS(app)
 
+
+def get_chat_api_url():
+    """兼容填写完整接口地址或仅填写 OpenAI 兼容 Base URL。"""
+    url = (SILICONFLOW_API_URL or '').rstrip('/')
+    if url.endswith('/chat/completions'):
+        return url
+    if url.endswith('/v1'):
+        return url + '/chat/completions'
+    return url + '/v1/chat/completions'
+
 # Global
 scraper = LotteryScraper()
 _draws_cache = []
@@ -288,7 +298,7 @@ def chat():
 
     try:
         resp = requests.post(
-            SILICONFLOW_API_URL,
+            get_chat_api_url(),
             headers={
                 'Authorization': 'Bearer ' + SILICONFLOW_API_KEY,
                 'Content-Type': 'application/json'
@@ -303,20 +313,46 @@ def chat():
         )
         if resp.status_code != 200:
             error_msg = 'AI API 错误: HTTP %d' % resp.status_code
+            upstream_body = (resp.text or '').strip()
             try:
                 err_data = resp.json()
                 if 'error' in err_data:
-                    error_msg = str(err_data['error'].get('message', error_msg))
+                    if isinstance(err_data['error'], dict):
+                        error_msg = str(err_data['error'].get('message', error_msg))
+                    else:
+                        error_msg = str(err_data['error'])
             except Exception:
                 pass
-            return jsonify({'success': False, 'error': error_msg}), 500
+            logger.error('AI API HTTP %d at %s: %s', resp.status_code, get_chat_api_url(), upstream_body[:500])
+            return jsonify({
+                'success': False,
+                'error': error_msg,
+                'upstreamStatus': resp.status_code,
+                'upstreamBody': upstream_body[:300],
+            }), 502
 
-        result = resp.json()
-        reply = result['choices'][0]['message']['content']
+        try:
+            result = resp.json()
+        except ValueError:
+            return jsonify({
+                'success': False,
+                'error': 'AI 接口返回的不是 JSON，请检查 API URL 是否为 /v1/chat/completions'
+            }), 502
+        try:
+            reply = result['choices'][0]['message']['content']
+        except (KeyError, IndexError, TypeError):
+            logger.error('AI API response missing choices: %s', str(result)[:500])
+            return jsonify({
+                'success': False,
+                'error': 'AI 接口返回 JSON，但缺少 choices.message.content'
+            }), 502
         return jsonify({'success': True, 'reply': reply, 'model': model})
 
     except requests.Timeout:
         return jsonify({'success': False, 'error': 'AI 响应超时，请稍后重试'}), 500
+    except requests.RequestException as e:
+        logger.error('AI request failed: %s', str(e))
+        return jsonify({'success': False, 'error': '无法连接 AI 接口: ' + str(e)}), 502
     except Exception as e:
         logger.error('Chat error: %s', str(e))
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -559,7 +595,7 @@ def banker_analyze():
         prompt = '\n'.join(lines)
         try:
             resp = requests.post(
-                SILICONFLOW_API_URL,
+                get_chat_api_url(),
                 headers={
                     'Authorization': 'Bearer ' + SILICONFLOW_API_KEY,
                     'Content-Type': 'application/json'
@@ -576,8 +612,11 @@ def banker_analyze():
                 timeout=60
             )
             if resp.status_code == 200:
-                result = resp.json()
-                ai_analysis = result['choices'][0]['message']['content']
+                try:
+                    result = resp.json()
+                    ai_analysis = result['choices'][0]['message']['content']
+                except (ValueError, KeyError, TypeError):
+                    logger.error('Banker AI returned non-JSON or unexpected response')
             else:
                 logger.error('Banker AI HTTP %d', resp.status_code)
         except Exception as e:
