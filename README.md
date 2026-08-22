@@ -23,7 +23,7 @@ git push -u origin main
 | 变量名 | 值 | 必须 |
 |--------|-----|------|
 | `SILICONFLOW_API_KEY` | `sk-你的密钥` | ✅ |
-| `SILICONFLOW_API_URL` | `https://api.siliconflow.cn/v1/chat/completions` | 可选（有默认值） |
+| `SILICONFLOW_API_URL` | `https://api.dcprwo.cc.cd` | 可选（有默认值） |
 | `CACHE_DURATION` | `300` | 可选（缓存秒数） |
 
 ### 步骤 4：访问
@@ -36,8 +36,9 @@ Railway 会自动分配一个 `xxx.railway.app` 域名，打开即可使用。
 ```bash
 cd server
 pip install -r requirements.txt
-# 设置环境变量（或直接编辑 config.py）
+# 设置环境变量（不要把 Key 写入 config.py）
 export SILICONFLOW_API_KEY=sk-xxx
+export SILICONFLOW_API_URL=https://api.dcprwo.cc.cd
 python app.py
 # 浏览器打开 http://localhost:5000
 ```

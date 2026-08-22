@@ -9,7 +9,7 @@ import os
 # ============================================================
 # 硅基流动 API 配置（从环境变量读取）
 # ============================================================
-SILICONFLOW_API_KEY = os.environ.get('SILICONFLOW_API_KEY', 'sk-85f358600ca4401bd532437e07dd82f3e9dedce56fcb9ebd6bcbf8e6646903db')
+SILICONFLOW_API_KEY = os.environ.get('SILICONFLOW_API_KEY', '').strip()
 SILICONFLOW_API_URL = os.environ.get(
     'SILICONFLOW_API_URL',
     'https://api.dcprwo.cc.cd'
