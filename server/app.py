@@ -23,6 +23,8 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__, template_folder='templates')
+# 本地直接运行时，每次请求检查模板更新；部署时保留模板缓存。
+app.config['TEMPLATES_AUTO_RELOAD'] = __name__ == '__main__'
 CORS(app)
 
 
@@ -144,7 +146,7 @@ def get_draws():
     count = request.args.get('count', 100, type=int)
     now = datetime.now()
 
-    if _draws_cache and _cache_time and (now - _cache_time).seconds < CACHE_DURATION:
+    if _draws_cache and len(_draws_cache) >= count and _cache_time and (now - _cache_time).seconds < CACHE_DURATION:
         return jsonify({
             'success': True,
             'data': _draws_cache[:count],
@@ -630,10 +632,12 @@ def banker_analyze():
 
 
 # ======== Startup ========
-# gunicorn 启动时预加载数据
-preload_data()
+# gunicorn 正常预加载；本地仅在重载器子进程中加载，避免重复请求。
+if __name__ != '__main__' or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
+    preload_data()
 
 if __name__ == '__main__':
     logger.info('本地开发模式，监听端口 %d', SERVER_PORT)
     logger.info('请用浏览器打开: http://localhost:%d', SERVER_PORT)
-    app.run(host='0.0.0.0', port=SERVER_PORT, debug=False, use_reloader=False)
+    logger.info('自动重载已开启：修改页面后刷新浏览器，修改 Python 后服务自动重启')
+    app.run(host='0.0.0.0', port=SERVER_PORT, debug=False, use_reloader=True)

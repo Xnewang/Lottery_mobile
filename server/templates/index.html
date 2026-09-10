@@ -35,9 +35,58 @@
         .ball-square-sm .sq-zodiac{font-size:.6rem}
 
         /* 生肖筛选高亮 */
-        .zodiac-dim{opacity:.25;filter:grayscale(.75);transform:scale(.92)}
-        .zodiac-hit{box-shadow:0 0 0 3px #f59e0b,0 4px 12px rgba(245,158,11,.5);transform:scale(1.18);z-index:1}
-        .zodiac-hit,.zodiac-dim{transition:all .18s ease}
+        .draw-hall{font-family:"Microsoft YaHei","PingFang SC",sans-serif;max-width:1000px;margin-inline:auto}
+        .draw-hall .latest-draw{background:#eff6ff;border:1px solid #dbeafe;border-radius:14px;padding:20px;margin-bottom:20px;color:#334155}
+        .draw-number-row{display:flex;align-items:center;gap:6px;flex-wrap:nowrap}
+        .draw-hall .draw-number-row .ball-square{width:36px;height:46px;border-radius:7px;box-shadow:inset 0 0 0 1px #00000008;transition:box-shadow .16s ease,background-color .16s ease;color:#fff}
+        .draw-hall .draw-number-row .sq-num{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.4px}
+        .draw-hall .draw-number-row .sq-zodiac{font-size:10px;margin-top:4px;opacity:1}
+        .draw-plus{width:10px;flex-shrink:0;text-align:center;font-size:14px;opacity:.6}
+        .draw-hall .zodiac-dim{background:#f1f2f4;color:#6b7280!important;box-shadow:none!important}
+        .draw-hall .latest-draw h3{color:#1d4ed8}
+        .draw-hall .zodiac-hit{outline:2px solid #2563eb;outline-offset:2px}
+        .zodiac-panel{background:#fff;border:1px solid #e1e7eb;border-radius:12px;padding:16px;margin-bottom:16px}
+        .zodiac-panel-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+        .zodiac-panel-heading strong{font-size:14px;color:#1e293b}
+        .zodiac-panel-heading span{display:block;font-size:11px;color:#64748b;margin-top:4px}
+        .zodiac-options{display:grid;grid-template-columns:repeat(12,40px);gap:8px}
+        .zodiac-option{height:40px;border:1px solid #e2e8f0;border-radius:8px;background:#ffffff;color:#475569;font-size:14px;transition:background-color .16s ease}
+        .zodiac-option[aria-pressed="true"]{background:#2563eb;color:white;border-color:#2563eb;box-shadow:0 2px 5px #2563eb1a}
+        .zodiac-reset{font-size:12px;color:#2563eb;border:1px solid #bfdbfe;border-radius:7px;padding:8px 12px}
+        .zodiac-reset:disabled{color:#8b969e;border-color:#e6ebee;cursor:default}
+        .zodiac-option:focus-visible,.zodiac-reset:focus-visible{outline:2px solid #2563eb;outline-offset:3px}
+        .zodiac-status{font-size:11px;color:#64748b;margin-top:12px;min-height:16px}
+        .zodiac-count-panel{border:1px solid #e2e8f0;border-radius:12px;background:#fff;margin-bottom:16px;padding:12px 16px}
+        .zodiac-count-options{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+        .zodiac-count-option{border:1px solid #e2e8f0;border-radius:8px;padding:8px 10px;background:#fff;color:#475569;font-size:12px}
+        .zodiac-count-option span{display:block;font-size:10px;margin-top:3px;color:#64748b}
+        .zodiac-count-option[aria-pressed="true"]{background:#eff6ff;border-color:#2563eb;color:#1d4ed8}
+        .zodiac-count-option:focus-visible,.record-count:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
+        .record-count{border:1px solid #bfdbfe;border-radius:5px;padding:3px 6px;color:#1d4ed8;background:#eff6ff;white-space:nowrap}
+        .draw-records{border:1px solid #e1e7eb;border-radius:12px;background:#fff;overflow:hidden}
+        .draw-record{display:grid;grid-template-columns:190px 304px 1fr;gap:20px;align-items:center;padding:18px 20px}
+        .draw-record+.draw-record{border-top:1px solid #edf0f3}
+        .draw-record.record-muted{background:#f8f9fa;color:#9ca3af}
+        .draw-record.record-muted .record-heading,.draw-record.record-muted .record-details{filter:grayscale(1);opacity:.5}
+        .draw-hall .record-muted .ball-square{background:#f1f2f4!important;color:#9ca3af!important;box-shadow:none!important;outline:none}
+        .record-muted .record-count{cursor:default}
+        .record-heading strong{display:block;font-size:13px;color:#1e293b;font-variant-numeric:tabular-nums}
+        .record-heading time{display:block;font-size:11px;color:#64748b;margin-top:6px}
+        .record-details{display:flex;align-items:center;gap:10px;font-size:11px;color:#64748b;flex-wrap:wrap}
+        .record-special-label{color:#475569;font-weight:600}
+        .draw-empty{padding:32px 16px;text-align:center;color:#64748b;font-size:13px}
+        @media(hover:hover){.zodiac-option:hover{border-color:#93c5fd}.draw-record:hover{background:#f8faff}}
+        @media(max-width:900px){.draw-record{grid-template-columns:170px 1fr;gap:12px}.record-details{grid-column:2}}
+        @media(max-width:639px){
+            .draw-hall .latest-draw{padding:16px}
+            .zodiac-options{grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+            .draw-record{display:flex;flex-direction:column;align-items:flex-start;gap:14px;padding:16px}
+            .record-heading{display:flex;align-items:baseline;justify-content:space-between;width:100%;gap:8px;flex-wrap:wrap}
+            .record-heading time{margin:0;font-size:10px}
+            .record-details{gap:12px}
+        }
+        @media(max-width:380px){.draw-hall .draw-number-row .ball-square{width:30px;height:42px}.draw-number-row{gap:5px}.draw-plus{width:8px}}
+        @media(prefers-reduced-motion:reduce){.draw-hall *{transition:none!important;animation:none!important}}
 
         .fade-in{animation:fadeIn .3s ease-in}
         @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
@@ -126,9 +175,9 @@
         </div>
 
         <!-- ============ 开奖大厅 ============ -->
-        <div x-show="activeTab==='draws'&&!loading" x-cloak class="fade-in">
+        <div x-show="activeTab==='draws'&&!loading" x-cloak class="fade-in draw-hall">
             <!-- Latest draw -->
-            <div x-show="draws.length>0" class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-4 sm:p-6 text-white mb-4 sm:mb-6 shadow-lg">
+            <div x-show="draws.length>0" class="latest-draw">
                 <div class="flex items-center justify-between mb-2 sm:mb-3">
                     <div>
                         <span class="text-[10px] sm:text-xs opacity-80">最新一期开奖</span>
@@ -136,14 +185,14 @@
                     </div>
                     <span class="text-xs opacity-80" x-text="draws[0].date"></span>
                 </div>
-                <div class="flex items-center gap-1.5 sm:gap-3 flex-wrap mb-2 sm:mb-3">
+                <div class="draw-number-row mb-4">
                     <template x-for="n in draws[0].numbers" :key="'ln'+n">
                         <div class="ball-square ball-square-lg" :class="'ball-'+getColor(n)">
                             <span class="sq-num" x-text="pad(n)"></span>
                             <span class="sq-zodiac" x-text="getZodiac(n)"></span>
                         </div>
                     </template>
-                    <span class="text-lg sm:text-xl mx-0.5 sm:mx-1 opacity-80">+</span>
+                    <span class="draw-plus">+</span>
                     <div class="ball-square ball-square-lg ball-special" :class="'ball-'+getColor(draws[0].special)">
                         <span class="sq-num" x-text="pad(draws[0].special)"></span>
                         <span class="sq-zodiac" x-text="getZodiac(draws[0].special)"></span>
@@ -159,130 +208,72 @@
 
             <!-- Search -->
             <div class="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                <input type="text" x-model="searchTerm" @input="currentPage=1" placeholder="搜索期号或号码..."
+                <input type="text" x-model="searchTerm" placeholder="搜索期号或号码..."
                     class="flex-1 max-w-xs border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
                 <span class="text-xs sm:text-sm text-gray-500 flex-shrink-0" x-text="'共'+getFilteredDraws().length+'条'"></span>
             </div>
 
-            <!-- Mobile Card View (< sm) - 参考站样式：生肖筛选 + 卡片记录 -->
-            <div class="sm:hidden">
-                <!-- 生肖筛选行（无位置筛选） -->
-                <div class="bg-white rounded-lg border p-2 mb-2 flex flex-wrap items-center gap-1 shadow-sm">
-                    <template x-for="z in zodiacList" :key="'zf'+z">
-                        <button @click="toggleZodiacFilter(z)"
-                            :class="zodiacFilters.includes(z)?'bg-amber-500 text-white border-amber-500':'bg-white text-gray-600 border-gray-200 active:bg-gray-100'"
-                            class="px-2.5 py-1 rounded border text-xs font-medium transition-colors" x-text="z"></button>
-                    </template>
-                    <button @click="zodiacFilters=[]"
-                        :class="zodiacFilters.length?'border-amber-400 text-amber-600':'border-gray-200 text-gray-400'"
-                        class="px-2.5 py-1 rounded border text-xs font-medium transition-colors">还原</button>
+            <!-- Shared controls and records on every screen size -->
+            <section class="zodiac-panel" aria-label="生肖高亮">
+                <div class="zodiac-panel-heading">
+                    <div><strong>生肖标记</strong><span>可多选 · 对应号码描边显示</span></div>
+                    <button class="zodiac-reset" @click="zodiacFilters=[]" :disabled="!zodiacFilters.length">还原</button>
                 </div>
-                <div class="space-y-2">
-                    <template x-for="d in getFilteredDraws()" :key="'mc'+d.period">
-                        <div class="bg-white rounded-lg border p-3 shadow-sm">
-                            <div class="mb-2 text-sm text-gray-700">
-                                第<span class="font-mono font-bold" x-text="d.period"></span>期
-                                <span class="text-xs text-gray-400">(开奖时间:<span x-text="d.date"></span>)</span>
-                            </div>
-                            <div class="flex items-center gap-1.5 flex-wrap">
-                                <template x-for="n in d.numbers" :key="'mc'+d.period+'n'+n">
-                                    <div class="ball-square ball-square-sm" :class="['ball-'+getColor(n), zodiacClass(n)]">
-                                        <span class="sq-num" x-text="pad(n)"></span>
-                                        <span class="sq-zodiac" x-text="getZodiac(n)"></span>
-                                    </div>
-                                </template>
-                                <div class="ball-square ball-square-sm ball-special" :class="['ball-'+getColor(d.special), zodiacClass(d.special)]">
-                                    <span class="sq-num" x-text="pad(d.special)"></span>
-                                    <span class="sq-zodiac" x-text="getZodiac(d.special)"></span>
+                <div class="zodiac-options" role="group" aria-label="选择生肖">
+                    <template x-for="z in zodiacList" :key="'zf'+z">
+                        <button class="zodiac-option" @click="toggleZodiacFilter(z)"
+                            :aria-pressed="zodiacFilters.includes(z)" x-text="z"></button>
+                    </template>
+                </div>
+                <p class="zodiac-status" aria-live="polite" x-text="zodiacFilters.length?'已选：'+zodiacFilters.join('、')+' · 再次点击取消':'全部号码正常显示'"></p>
+            </section>
+                <section class="zodiac-count-panel" aria-label="查看开过几肖">
+                    <strong class="text-sm text-slate-700">查看开过几肖</strong>
+                    <div class="zodiac-count-options" role="group" aria-label="按每期生肖数量筛选">
+                        <button class="zodiac-count-option" @click="zodiacCountFilter=null" :aria-pressed="zodiacCountFilter===null">全部</button>
+                        <template x-for="count in [7,6,5,4,3,2]" :key="'count'+count">
+                            <button class="zodiac-count-option" @click="toggleZodiacCount(count)" :aria-pressed="zodiacCountFilter===count">
+                                <strong x-text="count+'肖'"></strong>
+                                <span x-text="getZodiacCountStats().counts[count]+'期'"></span>
+                            </button>
+                        </template>
+                    </div>
+                    <p class="zodiac-status" aria-live="polite" x-text="zodiacCountFilter===null?'点选几肖，其他开奖记录置灰，位置保持不变。':'已标记 '+zodiacCountFilter+'肖，其他记录置灰；所有记录位置保持不变。'"></p>
+                    <p class="zodiac-status" x-text="getZodiacCountSummary()"></p>
+                </section>
+            <div class="draw-records">
+                    <template x-for="d in getFilteredDraws()" :key="'record'+d.period">
+                    <article class="draw-record" :class="{'record-muted':isDrawMuted(d)}">
+                        <div class="record-heading">
+                            <strong>第 <span x-text="d.period"></span> 期</strong>
+                            <time x-text="d.date"></time>
+                        </div>
+                        <div class="draw-number-row">
+                            <template x-for="n in d.numbers" :key="'record'+d.period+'n'+n">
+                                <div class="ball-square" :class="['ball-'+getColor(n), zodiacClass(n)]">
+                                    <span class="sq-num" x-text="pad(n)"></span>
+                                    <span class="sq-zodiac" x-text="getZodiac(n)"></span>
                                 </div>
+                            </template>
+                            <span class="draw-plus" aria-label="特码">+</span>
+                            <div class="ball-square" :class="['ball-'+getColor(d.special), zodiacClass(d.special)]" :aria-label="'特码 '+pad(d.special)">
+                                <span class="sq-num" x-text="pad(d.special)"></span>
+                                <span class="sq-zodiac" x-text="getZodiac(d.special)"></span>
                             </div>
                         </div>
-                    </template>
-                </div>
+                        <div class="record-details">
+                            <button class="record-count" @click="toggleZodiacCount(getDrawZodiacCount(d))" :aria-pressed="zodiacCountFilter===getDrawZodiacCount(d)" :aria-label="'标记'+getDrawZodiacCount(d)+'肖开奖记录'" x-text="getDrawZodiacCount(d)===null?'数据不完整':getDrawZodiacCount(d)+'肖'" :disabled="getDrawZodiacCount(d)===null||isDrawMuted(d)"></button>
+                            <span class="record-special-label">特码</span>
+                            <span x-text="getColorLabel(d.special)"></span>
+                            <span x-text="d.zodiac || getZodiac(d.special)"></span>
+                            <span x-text="getElement(d.special)"></span>
+                            <span x-text="getHead(d.special)+'头'+getTail(d.special)+'尾'"></span>
+                        </div>
+                    </article>
+                </template>
+                <div class="draw-empty" x-show="!getFilteredDraws().length">没有找到相关开奖记录，请换个期号或号码试试。</div>
             </div>
 
-            <!-- Desktop Table (>= sm) -->
-            <div class="hidden sm:block bg-white rounded-xl border shadow-sm overflow-hidden">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead class="bg-gray-50 text-gray-600">
-                            <tr>
-                                <th class="px-3 py-3 text-left font-medium">期号</th>
-                                <th class="px-3 py-3 text-left font-medium">日期</th>
-                                <th class="px-3 py-3 text-left font-medium">正码</th>
-                                <th class="px-3 py-3 text-center font-medium">特码</th>
-                                <th class="px-3 py-3 text-center font-medium">波色</th>
-                                <th class="px-3 py-3 text-center font-medium">生肖</th>
-                                <th class="px-3 py-3 text-center font-medium">五行</th>
-                                <th class="px-3 py-3 text-center font-medium">头尾</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <template x-for="d in getPagedDraws()" :key="d.period">
-                                <tr class="border-t hover:bg-blue-50/30 transition-colors">
-                                    <td class="px-3 py-2.5 font-mono font-medium text-gray-700" x-text="d.period"></td>
-                                    <td class="px-3 py-2.5 text-gray-500 text-xs" x-text="d.date"></td>
-                                    <td class="px-3 py-2.5"><div class="flex gap-1 flex-wrap">
-                                        <template x-for="n in d.numbers" :key="'d'+d.period+'n'+n">
-                                            <div class="ball-square ball-square-xl" :class="'ball-'+getColor(n)">
-                                                <span class="sq-num" x-text="pad(n)"></span>
-                                                <span class="sq-zodiac" x-text="getZodiac(n)"></span>
-                                            </div>
-                                        </template>
-                                    </div></td>
-                                    <td class="px-3 py-2.5 text-center">
-                                        <div class="ball-square ball-square-xl ball-special inline-flex" :class="'ball-'+getColor(d.special)">
-                                            <span class="sq-num" x-text="pad(d.special)"></span>
-                                            <span class="sq-zodiac" x-text="getZodiac(d.special)"></span>
-                                        </div>
-                                    </td>
-                                    <td class="px-3 py-2.5 text-center">
-                                        <span class="px-2 py-0.5 rounded text-xs font-medium"
-                                            :class="{'bg-red-100 text-red-700':getColor(d.special)==='red','bg-blue-100 text-blue-700':getColor(d.special)==='blue','bg-green-100 text-green-700':getColor(d.special)==='green'}"
-                                            x-text="getColorLabel(d.special)"></span>
-                                    </td>
-                                    <td class="px-3 py-2.5 text-center text-gray-700" x-text="d.zodiac || getZodiac(d.special)"></td>
-                                    <td class="px-3 py-2.5 text-center text-gray-700" x-text="getElement(d.special)"></td>
-                                    <td class="px-3 py-2.5 text-center text-gray-500 font-mono text-xs" x-text="getHead(d.special)+'头'+getTail(d.special)+'尾'"></td>
-                                </tr>
-                            </template>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Pagination (desktop only) -->
-            <div class="hidden sm:flex mt-3 sm:mt-0 sm:border-t bg-white sm:bg-gray-50 rounded-lg sm:rounded-none p-3 sm:px-4 sm:py-3 items-center justify-between text-xs sm:text-sm border sm:border-0 sm:border-t">
-                <div class="flex flex-wrap items-center gap-2 sm:gap-3 text-gray-500">
-                    <span x-text="currentPage+'/'+getTotalPages()+'页'"></span>
-                    <label class="hidden sm:flex items-center gap-1 whitespace-nowrap">
-                        每页
-                        <select x-model.number="pageSize" @change="currentPage=1"
-                            class="border rounded px-1.5 py-1 bg-white text-xs text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-400">
-                            <option :value="10">10条</option>
-                            <option :value="15">15条</option>
-                            <option :value="30">30条</option>
-                            <option :value="50">50条</option>
-                        </select>
-                    </label>
-                    <label class="hidden sm:flex items-center gap-1 whitespace-nowrap">
-                        跳转
-                        <select x-model.number="currentPage"
-                            class="border rounded px-1.5 py-1 bg-white text-xs text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-400"
-                            aria-label="跳转到页码">
-                            <template x-for="page in getPageNumbers()" :key="'page'+page">
-                                <option :value="page" x-text="page+'页'"></option>
-                            </template>
-                        </select>
-                    </label>
-                </div>
-                <div class="flex gap-1">
-                    <button @click="currentPage=1" :disabled="currentPage<=1" class="px-2 sm:px-2.5 py-1.5 sm:py-1 rounded border bg-white hover:bg-gray-100 disabled:opacity-40 text-xs sm:text-sm">首页</button>
-                    <button @click="currentPage--" :disabled="currentPage<=1" class="px-2 sm:px-2.5 py-1.5 sm:py-1 rounded border bg-white hover:bg-gray-100 disabled:opacity-40 text-xs sm:text-sm">上页</button>
-                    <button @click="currentPage++" :disabled="currentPage>=getTotalPages()" class="px-2 sm:px-2.5 py-1.5 sm:py-1 rounded border bg-white hover:bg-gray-100 disabled:opacity-40 text-xs sm:text-sm">下页</button>
-                    <button @click="currentPage=getTotalPages()" :disabled="currentPage>=getTotalPages()" class="px-2 sm:px-2.5 py-1.5 sm:py-1 rounded border bg-white hover:bg-gray-100 disabled:opacity-40 text-xs sm:text-sm">末页</button>
-                </div>
-            </div>
         </div>
 
         <!-- ============ 数据分析 ============ -->
@@ -973,7 +964,7 @@ function app() {
         ],
         YEAR_ANIMAL,
         draws:[], loading:true, dataSource:'',
-        searchTerm:'', currentPage:1, pageSize:15, zodiacFilters:[],
+        searchTerm:'', zodiacFilters:[], zodiacCountFilter:null,
         analysisTab:'overview',
         analysisTabs:[{id:'overview',name:'总览'},{id:'frequency',name:'频率'},{id:'attributes',name:'属性'}],
         analysisRange:50, analysis:null,
@@ -1090,7 +1081,7 @@ function app() {
         async fetchDraws() {
             this.loading=true;
             try {
-                const r=await fetch('/api/draws?count=100'); const d=await r.json();
+                const r=await fetch('/api/draws?count=500'); const d=await r.json();
                 if(d.success){this.draws=d.data;this.dataSource=d.source;this.updateAnalysis();}
                 else{this.dataSource='加载失败';}
             } catch(e){this.dataSource='连接失败';}
@@ -1106,10 +1097,41 @@ function app() {
         getColor,getColorLabel,getZodiac,getElement,getHead,getTail,pad,colorHex,
 
         getFilteredDraws() {
-            if(!this.searchTerm)return this.draws;
             const t=this.searchTerm;
-            return this.draws.filter(d=>d.period.includes(t)||d.date.includes(t)||
-                d.numbers.some(n=>pad(n).includes(t))||pad(d.special).includes(t));
+            return this.draws.filter(d=>
+                (!t||d.period.includes(t)||d.date.includes(t)||
+                d.numbers.some(n=>pad(n).includes(t))||pad(d.special).includes(t)));
+        },
+        getDrawZodiacCount(d) {
+            if(!Array.isArray(d.numbers)||d.numbers.length!==6)return null;
+            const nums=[...d.numbers,d.special];
+            if(nums.some(n=>!Number.isInteger(n)||n<1||n>49)||new Set(nums).size!==7)return null;
+            // Zodiac assignments rotate by year; equality of n % 12 is invariant.
+            return new Set(nums.map(n=>n%12)).size;
+        },
+        getZodiacCountStats() {
+            const counts={2:0,3:0,4:0,5:0,6:0,7:0}, seen=new Set(), periods=[];
+            for(const d of this.draws){
+                const count=this.getDrawZodiacCount(d);
+                if(count===null||!d.period||seen.has(d.period))continue;
+                seen.add(d.period);periods.push(d.period);counts[count]++;
+            }
+            periods.sort();
+            return {counts,total:periods.length,minimum:[2,3,4,5,6,7].find(n=>counts[n]>0)??null,
+                first:periods[0],last:periods[periods.length-1]};
+        },
+        getZodiacCountSummary() {
+            if(this.dataSource.includes('模拟'))return '当前为模拟数据，不代表真实开奖历史。';
+            const s=this.getZodiacCountStats();
+            if(!s.total)return '暂无有效开奖记录可统计';
+            return '已加载历史 '+s.total+'期（'+s.first+'—'+s.last+'），最少 '+s.minimum+'肖，共 '+s.counts[s.minimum]+'期。';
+        },
+        toggleZodiacCount(count) {
+            if(count===null)return;
+            this.zodiacCountFilter=this.zodiacCountFilter===count?null:count;
+        },
+        isDrawMuted(d) {
+            return this.zodiacCountFilter!==null&&this.getDrawZodiacCount(d)!==this.zodiacCountFilter;
         },
         toggleZodiacFilter(z) {
             const idx=this.zodiacFilters.indexOf(z);
@@ -1119,9 +1141,6 @@ function app() {
             if(!this.zodiacFilters.length)return '';
             return this.zodiacFilters.includes(getZodiac(n))?'zodiac-hit':'zodiac-dim';
         },
-        getPagedDraws() { const f=this.getFilteredDraws();const s=(this.currentPage-1)*this.pageSize;return f.slice(s,s+this.pageSize); },
-        getTotalPages() { return Math.max(1,Math.ceil(this.getFilteredDraws().length/this.pageSize)); },
-        getPageNumbers() { return Array.from({length:this.getTotalPages()},(_,i)=>i+1); },
         updateAnalysis() { this.analysis=computeAnalysis(this.draws,this.analysisRange); },
 
         toggleNumber(n) {
