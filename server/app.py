@@ -146,6 +146,17 @@ def get_draws():
     count = request.args.get('count', 100, type=int)
     now = datetime.now()
 
+    if 'year' in request.args:
+        year = request.args.get('year', type=int)
+        if year is None or not 2020 <= year <= now.year:
+            return jsonify({'success': False, 'error': '请选择有效年份'}), 400
+        result = scraper.fetch_year(year)
+        if not result.get('success'):
+            return jsonify(result), 502
+        draws = [enrich_draw(d) for d in result['data']]
+        return jsonify({'success': True, 'data': draws, 'source': result['source'],
+                        'year': year, 'count': len(draws)})
+
     if _draws_cache and len(_draws_cache) >= count and _cache_time and (now - _cache_time).seconds < CACHE_DURATION:
         return jsonify({
             'success': True,

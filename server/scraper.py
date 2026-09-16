@@ -137,6 +137,21 @@ class LotteryScraper:
         self._cache = None
         self._cache_time = 0
         self._cache_source = ''
+        self._year_cache = {}
+
+    def fetch_year(self, year):
+        cached = self._year_cache.get(year)
+        if cached and time.time() - cached['time'] < CACHE_DURATION:
+            return {'success': True, 'data': cached['data'], 'source': cached['source']}
+        draws, source = self._fetch_via_macaujc(year)
+        if not source:
+            return {'success': False, 'error': '该年份数据暂时无法获取，请重试'}
+        # The upstream current-year response can include last year's records.
+        draws = [d for d in draws if str(d.get('date', '')).startswith(str(year) + '-')]
+        draws = list({d['period']: d for d in draws}.values())
+        draws.sort(key=lambda d: d['period'], reverse=True)
+        self._year_cache[year] = {'time': time.time(), 'data': draws, 'source': source}
+        return {'success': True, 'data': draws, 'source': source}
 
     def fetch_draws(self, count=MAX_DRAWS, force_refresh=False):
         if not force_refresh and self._cache and (time.time() - self._cache_time) < CACHE_DURATION:
@@ -335,14 +350,13 @@ class LotteryScraper:
 
     # ========== 策略1: 按年份批量 history API ==========
 
-    def _fetch_via_macaujc(self):
+    def _fetch_via_macaujc(self, year=None):
         logger.info("=" * 50)
         logger.info("策略1: 请求按年份 history API")
         logger.info("=" * 50)
 
         for attempt in range(1, REQUEST_RETRIES + 1):
-            year = datetime.now().year
-            url = MACAUJC_API_URL.format(year=year)
+            url = MACAUJC_API_URL.format(year=year or datetime.now().year)
             logger.info("请求 %s (第%d/%d次)", url, attempt, REQUEST_RETRIES)
             try:
                 resp = self.session.get(url, timeout=REQUEST_TIMEOUT)
@@ -363,7 +377,7 @@ class LotteryScraper:
                         draw = self._parse_history_item(item)
                         if draw:
                             draws.append(draw)
-                    if draws:
+                    if draws or year is not None:
                         draws.sort(key=lambda x: x['period'], reverse=True)
                         logger.info("history API 获取到 %d 条数据", len(draws))
                         return draws, 'history.macaumarksix.com (按年份实时数据)'

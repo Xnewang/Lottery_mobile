@@ -75,6 +75,10 @@
         .record-details{display:flex;align-items:center;gap:10px;font-size:11px;color:#64748b;flex-wrap:wrap}
         .record-special-label{color:#475569;font-weight:600}
         .draw-empty{padding:32px 16px;text-align:center;color:#64748b;font-size:13px}
+        .draw-year-tabs{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 12px;margin-bottom:8px}
+        .draw-year-tab{flex-shrink:0;border:1px solid #e2e8f0;border-radius:8px;background:#fff;padding:10px 16px;font-size:15px;color:#475569}
+        .draw-year-tab[aria-selected="true"]{background:#2563eb;border-color:#2563eb;color:#fff;font-weight:700}
+        .draw-year-tab:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
         @media(hover:hover){.zodiac-option:hover{border-color:#93c5fd}.draw-record:hover{background:#f8faff}}
         @media(max-width:900px){.draw-record{grid-template-columns:170px 1fr;gap:12px}.record-details{grid-column:2}}
         @media(max-width:639px){
@@ -86,6 +90,38 @@
             .record-details{gap:12px}
         }
         @media(max-width:380px){.draw-hall .draw-number-row .ball-square{width:30px;height:42px}.draw-number-row{gap:5px}.draw-plus{width:8px}}
+        /* Desktop reading sizes: keep the compact mobile layout below 768px. */
+        @media(min-width:768px){
+            .draw-hall{max-width:1160px}
+            .draw-hall .draw-number-row{gap:8px}
+            .draw-hall .draw-number-row .ball-square{width:48px;height:64px;border-radius:9px}
+            .draw-hall .draw-number-row .sq-num{font-size:24px;letter-spacing:0}
+            .draw-hall .draw-number-row .sq-zodiac{font-size:16px;font-weight:700;line-height:1.25;margin-top:5px;opacity:1}
+            .draw-hall .draw-number-row .ball-red{background:#dc2626}
+            .draw-hall .draw-number-row .ball-blue{background:#2563eb}
+            .draw-hall .draw-number-row .ball-green{background:#15803d}
+            .draw-hall .draw-number-row .zodiac-dim{background:#f1f2f4}
+            .draw-hall .draw-plus{width:12px;font-size:18px}
+            .draw-record{grid-template-columns:minmax(170px,1fr) 404px;gap:14px 24px;padding:24px}
+            .record-heading strong{font-size:18px;line-height:1.5}
+            .record-heading time{font-size:14px;line-height:1.6;margin-top:8px;color:#526174}
+            .record-details{grid-column:2;font-size:15px;line-height:1.6;gap:12px;color:#475569}
+            .record-count{font-size:14px;padding:4px 8px}
+            .zodiac-panel,.zodiac-count-panel{padding:20px}
+            .zodiac-panel-heading strong,.zodiac-count-panel>strong{font-size:18px}
+            .zodiac-panel-heading span,.zodiac-status{font-size:14px;line-height:1.7}
+            .zodiac-options{grid-template-columns:repeat(12,minmax(0,44px))}
+            .zodiac-option{height:44px;font-size:17px}
+            .zodiac-reset,.zodiac-count-option{font-size:15px}
+            .zodiac-count-option{min-width:64px;padding:10px 14px}
+            .zodiac-count-option span{font-size:13px}
+            .draw-hall input,.draw-hall input+span{font-size:15px}
+            .draw-hall .latest-draw .text-xs{font-size:14px}
+        }
+        @media(min-width:1100px){
+            .draw-record{grid-template-columns:190px 404px minmax(0,1fr);gap:24px}
+            .record-details{grid-column:auto}
+        }
         @media(prefers-reduced-motion:reduce){.draw-hall *{transition:none!important;animation:none!important}}
 
         .fade-in{animation:fadeIn .3s ease-in}
@@ -207,6 +243,16 @@
             </div>
 
             <!-- Search -->
+            <div class="draw-year-tabs" role="tablist" aria-label="开奖年份">
+                <template x-for="year in drawYears" :key="'year'+year">
+                    <button class="draw-year-tab" role="tab" :id="'year-tab-'+year"
+                        :aria-selected="selectedYear===year" aria-controls="year-draw-records"
+                        :tabindex="selectedYear===year?0:-1" @click="selectDrawYear(year)"
+                        @keydown.right.prevent="moveDrawYear(year,1)" @keydown.left.prevent="moveDrawYear(year,-1)"
+                        @keydown.home.prevent="selectDrawYear(drawYears[0],true)" @keydown.end.prevent="selectDrawYear(drawYears[drawYears.length-1],true)"
+                        x-text="year+'年'+(year===cy?' · 今年':'')"></button>
+                </template>
+            </div>
             <div class="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
                 <input type="text" x-model="searchTerm" placeholder="搜索期号或号码..."
                     class="flex-1 max-w-xs border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
@@ -241,7 +287,12 @@
                     <p class="zodiac-status" aria-live="polite" x-text="zodiacCountFilter===null?'点选几肖，其他开奖记录置灰，位置保持不变。':'已标记 '+zodiacCountFilter+'肖，其他记录置灰；所有记录位置保持不变。'"></p>
                     <p class="zodiac-status" x-text="getZodiacCountSummary()"></p>
                 </section>
-            <div class="draw-records">
+            <div id="year-draw-records" class="draw-records" role="tabpanel" :aria-labelledby="'year-tab-'+selectedYear" :aria-busy="yearLoading">
+                <div class="draw-empty" x-show="yearLoading" role="status">正在加载该年开奖记录…</div>
+                <div class="draw-empty" x-show="yearError" role="alert">
+                    <span x-text="yearError"></span>
+                    <button class="zodiac-reset" @click="selectDrawYear(selectedYear)">重试</button>
+                </div>
                     <template x-for="d in getFilteredDraws()" :key="'record'+d.period">
                     <article class="draw-record" :class="{'record-muted':isDrawMuted(d)}">
                         <div class="record-heading">
@@ -249,16 +300,16 @@
                             <time x-text="d.date"></time>
                         </div>
                         <div class="draw-number-row">
-                            <template x-for="n in d.numbers" :key="'record'+d.period+'n'+n">
-                                <div class="ball-square" :class="['ball-'+getColor(n), zodiacClass(n)]">
+                                <template x-for="n in d.numbers" :key="'record'+d.period+'n'+n">
+                                    <div class="ball-square" :class="['ball-'+getColor(n), zodiacClass(n,d)]">
                                     <span class="sq-num" x-text="pad(n)"></span>
-                                    <span class="sq-zodiac" x-text="getZodiac(n)"></span>
+                                        <span class="sq-zodiac" x-text="getRecordZodiac(n,d)"></span>
                                 </div>
                             </template>
                             <span class="draw-plus" aria-label="特码">+</span>
-                            <div class="ball-square" :class="['ball-'+getColor(d.special), zodiacClass(d.special)]" :aria-label="'特码 '+pad(d.special)">
+                            <div class="ball-square" :class="['ball-'+getColor(d.special), zodiacClass(d.special,d)]" :aria-label="'特码 '+pad(d.special)">
                                 <span class="sq-num" x-text="pad(d.special)"></span>
-                                <span class="sq-zodiac" x-text="getZodiac(d.special)"></span>
+                                <span class="sq-zodiac" x-text="getRecordZodiac(d.special,d)"></span>
                             </div>
                         </div>
                         <div class="record-details">
@@ -271,7 +322,7 @@
                         </div>
                     </article>
                 </template>
-                <div class="draw-empty" x-show="!getFilteredDraws().length">没有找到相关开奖记录，请换个期号或号码试试。</div>
+                <div class="draw-empty" x-show="!yearLoading&&!yearError&&!getFilteredDraws().length" x-text="searchTerm?'该年份没有匹配的开奖记录，请换个期号或号码。':selectedYear+'年暂无开奖记录'"></div>
             </div>
 
         </div>
@@ -964,6 +1015,8 @@ function app() {
         ],
         YEAR_ANIMAL,
         draws:[], loading:true, dataSource:'',
+        cy, selectedYear:cy, drawYears:Array.from({length:Math.max(1,cy-2020+1)},(_,i)=>cy-i),
+        yearDrawsCache:{}, yearSources:{}, yearLoading:false, yearError:'', yearRequestId:0,
         searchTerm:'', zodiacFilters:[], zodiacCountFilter:null,
         analysisTab:'overview',
         analysisTabs:[{id:'overview',name:'总览'},{id:'frequency',name:'频率'},{id:'attributes',name:'属性'}],
@@ -1082,7 +1135,9 @@ function app() {
             this.loading=true;
             try {
                 const r=await fetch('/api/draws?count=500'); const d=await r.json();
-                if(d.success){this.draws=d.data;this.dataSource=d.source;this.updateAnalysis();}
+                if(d.success){this.draws=d.data;this.dataSource=d.source;
+                    this.yearDrawsCache[cy]=d.data.filter(row=>String(row.date).startsWith(cy+'-'));
+                    this.yearSources[cy]=d.source;this.updateAnalysis();}
                 else{this.dataSource='加载失败';}
             } catch(e){this.dataSource='连接失败';}
             finally{this.loading=false;}
@@ -1096,9 +1151,37 @@ function app() {
 
         getColor,getColorLabel,getZodiac,getElement,getHead,getTail,pad,colorHex,
 
+        async selectDrawYear(year,focus=false) {
+            this.selectedYear=year;this.searchTerm='';this.yearError='';
+            if(focus)this.$nextTick(()=>document.getElementById('year-tab-'+year)?.focus());
+            const requestId=++this.yearRequestId;
+            if(Object.prototype.hasOwnProperty.call(this.yearDrawsCache,year)){this.yearLoading=false;return;}
+            this.yearLoading=true;
+            try {
+                const r=await fetch('/api/draws?year='+year), result=await r.json();
+                if(!r.ok||!result.success)throw new Error(result.error||'加载失败，请重试');
+                this.yearDrawsCache[year]=result.data.filter(d=>String(d.date).startsWith(year+'-'));
+                this.yearSources[year]=result.source||'';
+            } catch(e) {
+                if(requestId===this.yearRequestId)this.yearError=year+'年数据加载失败，请重试';
+            } finally {
+                if(requestId===this.yearRequestId)this.yearLoading=false;
+            }
+        },
+        moveDrawYear(year,step) {
+            const index=(this.drawYears.indexOf(year)+step+this.drawYears.length)%this.drawYears.length;
+            this.selectDrawYear(this.drawYears[index],true);
+        },
+        getYearDraws() { return this.yearDrawsCache[this.selectedYear]||[]; },
+        getRecordZodiac(n,d) {
+            if(n===d.special&&d.zodiac)return d.zodiac;
+            const index=d.numbers.indexOf(n);
+            return d.normal_zodiacs?.[index]||getZodiac(n);
+        },
+
         getFilteredDraws() {
             const t=this.searchTerm;
-            return this.draws.filter(d=>
+            return this.getYearDraws().filter(d=>
                 (!t||d.period.includes(t)||d.date.includes(t)||
                 d.numbers.some(n=>pad(n).includes(t))||pad(d.special).includes(t)));
         },
@@ -1111,7 +1194,7 @@ function app() {
         },
         getZodiacCountStats() {
             const counts={2:0,3:0,4:0,5:0,6:0,7:0}, seen=new Set(), periods=[];
-            for(const d of this.draws){
+            for(const d of this.getYearDraws()){
                 const count=this.getDrawZodiacCount(d);
                 if(count===null||!d.period||seen.has(d.period))continue;
                 seen.add(d.period);periods.push(d.period);counts[count]++;
@@ -1121,10 +1204,12 @@ function app() {
                 first:periods[0],last:periods[periods.length-1]};
         },
         getZodiacCountSummary() {
-            if(this.dataSource.includes('模拟'))return '当前为模拟数据，不代表真实开奖历史。';
+            if(this.yearLoading)return '正在加载 '+this.selectedYear+'年统计…';
+            if(this.yearError)return '该年份数据暂不可用';
+            if((this.yearSources[this.selectedYear]||'').includes('模拟'))return '当前为模拟数据，不代表真实开奖历史。';
             const s=this.getZodiacCountStats();
             if(!s.total)return '暂无有效开奖记录可统计';
-            return '已加载历史 '+s.total+'期（'+s.first+'—'+s.last+'），最少 '+s.minimum+'肖，共 '+s.counts[s.minimum]+'期。';
+            return this.selectedYear+'年共 '+s.total+'期（'+s.first+'—'+s.last+'），最少 '+s.minimum+'肖，共 '+s.counts[s.minimum]+'期。';
         },
         toggleZodiacCount(count) {
             if(count===null)return;
@@ -1137,9 +1222,9 @@ function app() {
             const idx=this.zodiacFilters.indexOf(z);
             if(idx>-1)this.zodiacFilters.splice(idx,1); else this.zodiacFilters.push(z);
         },
-        zodiacClass(n) {
+        zodiacClass(n,d=null) {
             if(!this.zodiacFilters.length)return '';
-            return this.zodiacFilters.includes(getZodiac(n))?'zodiac-hit':'zodiac-dim';
+            return this.zodiacFilters.includes(d?this.getRecordZodiac(n,d):getZodiac(n))?'zodiac-hit':'zodiac-dim';
         },
         updateAnalysis() { this.analysis=computeAnalysis(this.draws,this.analysisRange); },
 
