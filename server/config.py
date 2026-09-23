@@ -1,23 +1,29 @@
 # -*- coding: utf-8 -*-
-"""配置文件 - Railway 部署版
-在 Railway 面板的 Variables 中设置环境变量：
-  SILICONFLOW_API_KEY=sk-xxx
-"""
+"""应用配置。API 环境变量同时兼容新的通用名称和旧名称。"""
 
 import os
 
 # ============================================================
-# 硅基流动 API 配置（从环境变量读取）
+# OpenAI 兼容 API 配置（从环境变量读取，保留旧变量名兼容）
 # ============================================================
-SILICONFLOW_API_KEY = os.environ.get('SILICONFLOW_API_KEY', '').strip()
-SILICONFLOW_API_URL = os.environ.get(
-    'SILICONFLOW_API_URL',
-    'https://api.dcprwo.cc.cd'
-)
+SILICONFLOW_API_KEY = (
+    os.environ.get('OPENAI_API_KEY')
+    or os.environ.get('SILICONFLOW_API_KEY', '')
+).strip()
+SILICONFLOW_API_URL = (
+    os.environ.get('OPENAI_BASE_URL')
+    or os.environ.get('SILICONFLOW_API_URL')
+    or 'https://api.dcprwo.cc.cd'
+).strip()
+AI_WIRE_API = os.environ.get('AI_WIRE_API', 'responses').strip().lower()
+AI_REASONING_EFFORT = os.environ.get('AI_REASONING_EFFORT', 'high').strip().lower()
+AI_DISABLE_RESPONSE_STORAGE = os.environ.get(
+    'AI_DISABLE_RESPONSE_STORAGE', 'true'
+).strip().lower() in ('1', 'true', 'yes', 'on')
 
 # ============================================================
 # AI 模型列表
-# 每个模型可选配置 api_url / api_key；不配则用 SILICONFLOW 默认端点
+# 每个模型可选配置 api_url / api_key；不配则使用上面的默认端点
 # ============================================================
 AI_MODELS = [
     {"id": "gpt-5.5", "name": "GPT-5.5", "free": False},

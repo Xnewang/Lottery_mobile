@@ -22,8 +22,11 @@ git push -u origin main
 
 | 变量名 | 值 | 必须 |
 |--------|-----|------|
-| `SILICONFLOW_API_KEY` | `sk-你的密钥` | ✅ |
-| `SILICONFLOW_API_URL` | `https://api.dcprwo.cc.cd` | 可选（有默认值） |
+| `OPENAI_API_KEY` | `sk-你的密钥` | ✅ |
+| `OPENAI_BASE_URL` | `https://api.dcprwo.cc.cd` | 可选（有默认值） |
+| `AI_WIRE_API` | `responses` | 使用 Responses API |
+| `AI_REASONING_EFFORT` | `high` | 推理强度 |
+| `AI_DISABLE_RESPONSE_STORAGE` | `true` | 禁止服务端存储响应 |
 | `CACHE_DURATION` | `300` | 可选（缓存秒数） |
 
 ### 步骤 4：访问
@@ -37,8 +40,11 @@ Railway 会自动分配一个 `xxx.railway.app` 域名，打开即可使用。
 cd server
 pip install -r requirements.txt
 # 设置环境变量（不要把 Key 写入 config.py）
-export SILICONFLOW_API_KEY=sk-xxx
-export SILICONFLOW_API_URL=https://api.dcprwo.cc.cd
+export OPENAI_API_KEY=sk-xxx
+export OPENAI_BASE_URL=https://api.dcprwo.cc.cd
+export AI_WIRE_API=responses
+export AI_REASONING_EFFORT=high
+export AI_DISABLE_RESPONSE_STORAGE=true
 python app.py
 # 浏览器打开 http://localhost:5000
 ```

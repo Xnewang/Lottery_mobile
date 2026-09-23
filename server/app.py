@@ -10,7 +10,8 @@ from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from config import (
     SILICONFLOW_API_KEY, SILICONFLOW_API_URL,
-    AI_MODELS, CACHE_DURATION, SERVER_PORT
+    AI_MODELS, AI_WIRE_API, AI_REASONING_EFFORT,
+    AI_DISABLE_RESPONSE_STORAGE, CACHE_DURATION, SERVER_PORT
 )
 from scraper import LotteryScraper, get_zodiac, get_element, get_color, get_year_animal
 
@@ -28,14 +29,82 @@ app.config['TEMPLATES_AUTO_RELOAD'] = __name__ == '__main__'
 CORS(app)
 
 
-def get_chat_api_url():
-    """兼容填写完整接口地址或仅填写 OpenAI 兼容 Base URL。"""
+def get_ai_api_url():
+    """兼容 Base URL、/v1 地址或完整的 OpenAI 兼容接口地址。"""
     url = (SILICONFLOW_API_URL or '').rstrip('/')
-    if url.endswith('/chat/completions'):
+    endpoint = 'responses' if AI_WIRE_API == 'responses' else 'chat/completions'
+    if url.endswith('/' + endpoint):
         return url
     if url.endswith('/v1'):
-        return url + '/chat/completions'
-    return url + '/v1/chat/completions'
+        return url + '/' + endpoint
+    return url + '/v1/' + endpoint
+
+
+def build_ai_payload(model, messages, max_tokens=2000, temperature=0.7):
+    """根据 wire API 生成 OpenAI 兼容请求体。"""
+    if AI_WIRE_API == 'responses':
+        response_input = []
+        for message in messages:
+            role = message.get('role', 'user')
+            if role == 'system':
+                role = 'developer'
+            response_input.append({
+                'role': role,
+                'content': message.get('content', '')
+            })
+
+        payload = {
+            'model': model,
+            'input': response_input,
+            'max_output_tokens': max_tokens,
+            'store': not AI_DISABLE_RESPONSE_STORAGE,
+        }
+        if AI_REASONING_EFFORT:
+            payload['reasoning'] = {'effort': AI_REASONING_EFFORT}
+        return payload
+
+    return {
+        'model': model,
+        'messages': messages,
+        'max_tokens': max_tokens,
+        'temperature': temperature,
+    }
+
+
+def extract_ai_text(result):
+    """从 Responses API 或 Chat Completions 返回值中提取最终文本。"""
+    if AI_WIRE_API != 'responses':
+        return result['choices'][0]['message']['content']
+
+    output_text = result.get('output_text')
+    if isinstance(output_text, str) and output_text.strip():
+        return output_text
+
+    texts = []
+    for item in result.get('output', []):
+        if not isinstance(item, dict):
+            continue
+        for content in item.get('content', []):
+            if not isinstance(content, dict):
+                continue
+            if content.get('type') == 'output_text' and content.get('text'):
+                texts.append(content['text'])
+
+    if not texts:
+        raise KeyError('Responses API 返回值中缺少 output_text')
+    return '\n'.join(texts)
+
+
+def call_ai(model, messages, timeout, max_tokens=2000, temperature=0.7):
+    return requests.post(
+        get_ai_api_url(),
+        headers={
+            'Authorization': 'Bearer ' + SILICONFLOW_API_KEY,
+            'Content-Type': 'application/json'
+        },
+        json=build_ai_payload(model, messages, max_tokens, temperature),
+        timeout=timeout
+    )
 
 # Global
 scraper = LotteryScraper()
@@ -99,6 +168,7 @@ def preload_data():
 
     ai_status = '已配置' if (SILICONFLOW_API_KEY and SILICONFLOW_API_KEY != 'your_api_key_here') else '未配置'
     logger.info('AI API Key: %s', ai_status)
+    logger.info('AI wire API: %s', AI_WIRE_API)
     logger.info('=' * 50)
     _preloaded = True
 
@@ -134,6 +204,7 @@ def health():
     return jsonify({
         'success': True,
         'ai_configured': bool(SILICONFLOW_API_KEY and SILICONFLOW_API_KEY != 'your_api_key_here'),
+        'ai_wire_api': AI_WIRE_API,
         'year_animal': get_year_animal(),
         'time': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     })
@@ -296,7 +367,7 @@ def chat():
         messages_input = list(history) + [{'role': 'user', 'content': single_msg}]
 
     if not SILICONFLOW_API_KEY or SILICONFLOW_API_KEY == 'your_api_key_here':
-        return jsonify({'success': False, 'error': 'AI API Key 未配置，请在 Railway 面板设置 SILICONFLOW_API_KEY 环境变量'}), 500
+        return jsonify({'success': False, 'error': 'AI API Key 未配置，请设置 OPENAI_API_KEY 环境变量'}), 500
 
     model = data.get('model', AI_MODELS[0]['id'])
     draws = _draws_cache or []
@@ -310,20 +381,7 @@ def chat():
         })
 
     try:
-        resp = requests.post(
-            get_chat_api_url(),
-            headers={
-                'Authorization': 'Bearer ' + SILICONFLOW_API_KEY,
-                'Content-Type': 'application/json'
-            },
-            json={
-                'model': model,
-                'messages': api_messages,
-                'max_tokens': 2000,
-                'temperature': 0.7
-            },
-            timeout=360
-        )
+        resp = call_ai(model, api_messages, timeout=360, max_tokens=2000, temperature=0.7)
         if resp.status_code != 200:
             error_msg = 'AI API 错误: HTTP %d' % resp.status_code
             upstream_body = (resp.text or '').strip()
@@ -336,7 +394,7 @@ def chat():
                         error_msg = str(err_data['error'])
             except Exception:
                 pass
-            logger.error('AI API HTTP %d at %s: %s', resp.status_code, get_chat_api_url(), upstream_body[:500])
+            logger.error('AI API HTTP %d at %s: %s', resp.status_code, get_ai_api_url(), upstream_body[:500])
             return jsonify({
                 'success': False,
                 'error': error_msg,
@@ -349,15 +407,15 @@ def chat():
         except ValueError:
             return jsonify({
                 'success': False,
-                'error': 'AI 接口返回的不是 JSON，请检查 API URL 是否为 /v1/chat/completions'
+                'error': 'AI 接口返回的不是 JSON，请检查 API 地址和 wire API 配置'
             }), 502
         try:
-            reply = result['choices'][0]['message']['content']
+            reply = extract_ai_text(result)
         except (KeyError, IndexError, TypeError):
-            logger.error('AI API response missing choices: %s', str(result)[:500])
+            logger.error('AI API response missing output text: %s', str(result)[:500])
             return jsonify({
                 'success': False,
-                'error': 'AI 接口返回 JSON，但缺少 choices.message.content'
+                'error': 'AI 接口返回 JSON，但缺少可用的文本输出'
             }), 502
         return jsonify({'success': True, 'reply': reply, 'model': model})
 
@@ -607,27 +665,20 @@ def banker_analyze():
         system_prompt = build_system_prompt(draws)
         prompt = '\n'.join(lines)
         try:
-            resp = requests.post(
-                get_chat_api_url(),
-                headers={
-                    'Authorization': 'Bearer ' + SILICONFLOW_API_KEY,
-                    'Content-Type': 'application/json'
-                },
-                json={
-                    'model': model,
-                    'messages': [
-                        {'role': 'system', 'content': system_prompt},
-                        {'role': 'user', 'content': prompt}
-                    ],
-                    'max_tokens': 2000,
-                    'temperature': 0.5
-                },
-                timeout=60
+            resp = call_ai(
+                model,
+                [
+                    {'role': 'system', 'content': system_prompt},
+                    {'role': 'user', 'content': prompt}
+                ],
+                timeout=60,
+                max_tokens=2000,
+                temperature=0.5
             )
             if resp.status_code == 200:
                 try:
                     result = resp.json()
-                    ai_analysis = result['choices'][0]['message']['content']
+                    ai_analysis = extract_ai_text(result)
                 except (ValueError, KeyError, TypeError):
                     logger.error('Banker AI returned non-JSON or unexpected response')
             else:
