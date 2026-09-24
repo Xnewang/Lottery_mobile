@@ -1,5 +1,16 @@
 # 🎰 澳门六合彩智能分析助手
 
+## Render 免费部署
+
+仓库根目录已经提供 `render.yaml`，可在 Render 中直接创建免费 Web Service：
+
+1. 登录 Render，并选择 **New → Blueprint**。
+2. 连接本仓库 `Xnewang/Lottery_mobile`。
+3. 确认区域为 Singapore、套餐为 Free，然后应用 Blueprint。
+4. Render 会使用根目录的 `Dockerfile` 构建服务，并通过 `/api/health` 检查运行状态。
+
+服务默认开启自动部署。以后推送到 `main` 分支，Render 会自动重新构建并发布。
+
 ## Railway 一键部署
 
 ### 步骤 1：推送到 GitHub

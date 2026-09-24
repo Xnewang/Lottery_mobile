@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: draw-history-viewer
+    runtime: docker
+    plan: free
+    region: singapore
+    branch: main
+    autoDeployTrigger: commit
+    healthCheckPath: /api/health
+    envVars:
+      - key: CACHE_DURATION
+        value: "300"
+      - key: CONCURRENT_WORKERS
+        value: "2"
+      - key: HISTORY_BATCH_SIZE
+        value: "6"
+      - key: HISTORY_FETCH_RETRIES
+        value: "2"
