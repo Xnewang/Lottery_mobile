@@ -56,20 +56,80 @@
         .zodiac-reset:disabled{color:#8b969e;border-color:#e6ebee;cursor:default}
         .zodiac-option:focus-visible,.zodiac-reset:focus-visible{outline:2px solid #2563eb;outline-offset:3px}
         .zodiac-status{font-size:11px;color:#64748b;margin-top:12px;min-height:16px}
+        .draw-filters-sticky{position:sticky;top:48px;z-index:30;display:flow-root;background:#f9fafb}
         .zodiac-count-panel{border:1px solid #e2e8f0;border-radius:12px;background:#fff;margin-bottom:16px;padding:12px 16px}
         .zodiac-count-options{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
         .zodiac-count-option{border:1px solid #e2e8f0;border-radius:8px;padding:8px 10px;background:#fff;color:#475569;font-size:12px}
         .zodiac-count-option span{display:block;font-size:10px;margin-top:3px;color:#64748b}
         .zodiac-count-option[aria-pressed="true"]{background:#eff6ff;border-color:#2563eb;color:#1d4ed8}
         .zodiac-count-option:focus-visible,.record-count:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
+        .sequence-toolbar{border:1px solid #dbeafe;border-radius:12px;background:#f8fbff;margin-bottom:16px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+        .sequence-toolbar-title strong{display:block;font-size:14px;color:#1e293b}
+        .sequence-toolbar-title span{display:block;font-size:11px;color:#64748b;margin-top:3px}
+        .sequence-toolbar-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+        .sequence-control-group{display:flex;align-items:center;gap:4px}
+        .sequence-control-label{font-size:11px;color:#64748b;margin-right:2px}
+        .manual-selection-count{border-radius:999px;background:#2563eb;color:#fff;font-size:12px;font-weight:700;padding:6px 10px;white-space:nowrap}
+        .manual-selection-summary{font-size:12px;color:#475569;white-space:nowrap}
+        .sequence-option,.analysis-pick,.match-mode,.analysis-clear{border:1px solid #dbe4ee;border-radius:7px;background:#fff;color:#475569;font-size:12px;padding:7px 10px;white-space:nowrap}
+        .sequence-option[aria-pressed="true"],.match-mode[aria-pressed="true"]{border-color:#2563eb;background:#eff6ff;color:#1d4ed8;font-weight:700}
+        .sequence-option:disabled{opacity:.55;cursor:wait}
+        .analysis-clear{color:#64748b}
         .record-count{border:1px solid #bfdbfe;border-radius:5px;padding:3px 6px;color:#1d4ed8;background:#eff6ff;white-space:nowrap}
         .draw-records{border:1px solid #e1e7eb;border-radius:12px;background:#fff;overflow:hidden}
         .draw-record{display:grid;grid-template-columns:190px 304px 1fr;gap:20px;align-items:center;padding:18px 20px}
         .draw-record+.draw-record{border-top:1px solid #edf0f3}
+        .draw-record.analysis-selected{background:#eff6ff;box-shadow:inset 4px 0 #2563eb}
         .draw-record.record-muted{background:#f8f9fa;color:#9ca3af}
+        .draw-record.record-muted.analysis-selected{background:#eff6ff;color:#64748b}
         .draw-record.record-muted .record-heading,.draw-record.record-muted .record-details{filter:grayscale(1);opacity:.5}
         .draw-hall .record-muted .ball-square{background:#f1f2f4!important;color:#9ca3af!important;box-shadow:none!important;outline:none}
         .record-muted .record-count{cursor:default}
+        .analysis-pick{padding:4px 8px;color:#2563eb;border-color:#bfdbfe;background:#fff;cursor:pointer}
+        .analysis-pick[aria-pressed="true"]{background:#2563eb;color:#fff;border-color:#2563eb}
+        .window-analysis-panel{border:1px solid #bfdbfe;border-radius:14px;background:#fff;margin-bottom:16px;overflow:hidden;box-shadow:0 8px 24px rgba(37,99,235,.08)}
+        .window-analysis-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:16px 18px;border-bottom:1px solid #e5edf7;background:#f8fbff}
+        .window-analysis-head h3{font-size:16px;font-weight:800;color:#1e3a8a}
+        .window-analysis-head p{font-size:11px;color:#64748b;margin-top:4px}
+        .analysis-summary-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;padding:14px 18px}
+        .analysis-summary-card{border:1px solid #e5e7eb;border-radius:10px;padding:10px 12px;background:#fff;min-width:0}
+        .analysis-summary-card span{display:block;font-size:10px;color:#64748b;margin-bottom:5px}
+        .analysis-summary-card strong{font-size:14px;color:#1e293b;line-height:1.5;word-break:break-word}
+        .analysis-detail{padding:0 18px 14px}
+        .analysis-detail-row{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-top:1px solid #f1f5f9}
+        .analysis-detail-label{width:92px;flex:0 0 92px;font-size:12px;font-weight:700;color:#475569;padding-top:4px}
+        .analysis-chip-list{display:flex;gap:6px;flex-wrap:wrap}
+        .analysis-chip{border-radius:999px;background:#f1f5f9;color:#475569;font-size:11px;padding:4px 8px}
+        .analysis-chip.complete{background:#dcfce7;color:#166534;font-weight:700}
+        .analysis-chip.missing{background:#fef2f2;color:#b91c1c;font-weight:700}
+        .history-match-panel{border-top:1px solid #e5edf7;padding:14px 18px 16px;background:#fbfdff}
+        .match-mode-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+        .history-match-summary{font-size:12px;color:#475569;margin-bottom:10px}
+        .history-match-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+        .history-match{border:1px solid #e2e8f0;border-radius:9px;background:#fff;padding:9px 11px;text-align:left;color:#475569;display:flex;justify-content:space-between;gap:10px;align-items:center}
+        .history-match:hover{border-color:#93c5fd;background:#f8fbff}
+        .history-match.current{border-color:#2563eb;background:#eff6ff}
+        .history-match strong{display:block;font-size:12px;color:#1e293b}
+        .history-match span{display:block;font-size:10px;color:#64748b;margin-top:3px}
+        .history-match .match-common{text-align:right;max-width:45%}
+        .triple-run-toolbar{border:1px solid #c7d2fe;border-radius:12px;background:#f8faff;margin-bottom:16px;padding:11px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+        .triple-run-toolbar strong{display:block;font-size:14px;color:#312e81}
+        .triple-run-toolbar p{font-size:11px;color:#64748b;margin-top:3px}
+        .triple-run-results{border:1px solid #c7d2fe;border-radius:14px;background:#fff;margin-bottom:16px;overflow:hidden;box-shadow:0 8px 24px rgba(79,70,229,.08)}
+        .triple-run-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:15px 18px;border-bottom:1px solid #e0e7ff;background:#f8faff}
+        .triple-run-head h3{font-size:16px;font-weight:800;color:#312e81}
+        .triple-run-head p{font-size:11px;color:#64748b;margin-top:4px}
+        .triple-run-selected{margin:14px 18px;padding:11px 13px;border:1px solid #bfdbfe;border-radius:10px;background:#eff6ff;color:#1e3a8a;font-size:12px}
+        .triple-run-selected strong{font-size:14px}
+        .triple-run-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:0 18px 16px}
+        .triple-run-card{border:1px solid #e2e8f0;border-radius:10px;background:#fff;padding:10px 12px;min-width:0}
+        .triple-run-card.selected{border-color:#2563eb;background:#eff6ff}
+        .triple-run-card-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+        .triple-run-card-head strong{font-size:13px;color:#1e293b}
+        .triple-run-card-head span{font-size:10px;color:#64748b;white-space:nowrap}
+        .triple-run-ranges{font-size:11px;color:#64748b;margin-top:6px;line-height:1.6;word-break:break-word}
+        .triple-run-empty{padding:0 18px 16px;color:#64748b;font-size:12px}
+        .analysis-disclaimer{font-size:10px;color:#94a3b8;margin-top:10px}
         .record-heading strong{display:block;font-size:13px;color:#1e293b;font-variant-numeric:tabular-nums}
         .record-heading time{display:block;font-size:11px;color:#64748b;margin-top:6px}
         .record-details{display:flex;align-items:center;gap:10px;font-size:11px;color:#64748b;flex-wrap:wrap}
@@ -82,8 +142,17 @@
         @media(hover:hover){.zodiac-option:hover{border-color:#93c5fd}.draw-record:hover{background:#f8faff}}
         @media(max-width:900px){.draw-record{grid-template-columns:170px 1fr;gap:12px}.record-details{grid-column:2}}
         @media(max-width:639px){
+            .draw-filters-sticky{position:static}
             .draw-hall .latest-draw{padding:16px}
             .zodiac-options{grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
+            .sequence-toolbar{align-items:flex-start}.sequence-toolbar-actions{width:100%}
+            .analysis-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr));padding:12px}
+            .window-analysis-head,.analysis-detail,.history-match-panel{padding-left:12px;padding-right:12px}
+            .history-match-list{grid-template-columns:1fr}
+            .triple-run-grid{grid-template-columns:1fr;padding-left:12px;padding-right:12px}
+            .triple-run-head,.triple-run-selected{margin-left:12px;margin-right:12px}
+            .triple-run-head{padding-left:12px;padding-right:12px;margin-left:0;margin-right:0}
+            .analysis-detail-row{display:block}.analysis-detail-label{width:auto;margin-bottom:5px}
             .draw-record{display:flex;flex-direction:column;align-items:flex-start;gap:14px;padding:16px}
             .record-heading{display:flex;align-items:baseline;justify-content:space-between;width:100%;gap:8px;flex-wrap:wrap}
             .record-heading time{margin:0;font-size:10px}
@@ -92,6 +161,7 @@
         @media(max-width:380px){.draw-hall .draw-number-row .ball-square{width:30px;height:42px}.draw-number-row{gap:5px}.draw-plus{width:8px}}
         /* Desktop reading sizes: keep the compact mobile layout below 768px. */
         @media(min-width:768px){
+            .draw-filters-sticky{top:57px}
             .draw-hall{max-width:1160px}
             .draw-hall .draw-number-row{gap:8px}
             .draw-hall .draw-number-row .ball-square{width:48px;height:64px;border-radius:9px}
@@ -115,6 +185,8 @@
             .zodiac-reset,.zodiac-count-option{font-size:15px}
             .zodiac-count-option{min-width:64px;padding:10px 14px}
             .zodiac-count-option span{font-size:13px}
+            .sequence-toolbar-title strong{font-size:16px}.sequence-toolbar-title span{font-size:13px}
+            .sequence-option,.analysis-pick,.match-mode,.analysis-clear{font-size:14px}
             .draw-hall input,.draw-hall input+span{font-size:15px}
             .draw-hall .latest-draw .text-xs{font-size:14px}
         }
@@ -213,7 +285,8 @@
         <!-- ============ 开奖大厅 ============ -->
         <div x-show="activeTab==='draws'&&!loading" x-cloak class="fade-in draw-hall">
             <!-- Latest draw -->
-            <div x-show="draws.length>0" class="latest-draw">
+            <template x-if="draws.length>0">
+            <div class="latest-draw">
                 <div class="flex items-center justify-between mb-2 sm:mb-3">
                     <div>
                         <span class="text-[10px] sm:text-xs opacity-80">最新一期开奖</span>
@@ -241,6 +314,7 @@
                     <span>头尾: <strong x-text="getHead(draws[0].special)+'头'+getTail(draws[0].special)+'尾'"></strong></span>
                 </div>
             </div>
+            </template>
 
             <!-- Search -->
             <div class="draw-year-tabs" role="tablist" aria-label="开奖年份">
@@ -260,33 +334,155 @@
             </div>
 
             <!-- Shared controls and records on every screen size -->
-            <section class="zodiac-panel" aria-label="生肖高亮">
-                <div class="zodiac-panel-heading">
-                    <div><strong>生肖标记</strong><span>可多选 · 对应号码描边显示</span></div>
-                    <button class="zodiac-reset" @click="zodiacFilters=[]" :disabled="!zodiacFilters.length">还原</button>
-                </div>
-                <div class="zodiac-options" role="group" aria-label="选择生肖">
-                    <template x-for="z in zodiacList" :key="'zf'+z">
-                        <button class="zodiac-option" @click="toggleZodiacFilter(z)"
-                            :aria-pressed="zodiacFilters.includes(z)" x-text="z"></button>
-                    </template>
-                </div>
-                <p class="zodiac-status" aria-live="polite" x-text="zodiacFilters.length?'已选：'+zodiacFilters.join('、')+' · 再次点击取消':'全部号码正常显示'"></p>
-            </section>
+            <div class="draw-filters-sticky">
+                <section class="zodiac-panel" aria-label="生肖高亮">
+                    <div class="zodiac-panel-heading">
+                        <div><strong>生肖标记</strong><span>可多选 · 选择2至4肖自动分析连续同开</span></div>
+                        <button class="zodiac-reset" @click="zodiacFilters=[]" :disabled="!zodiacFilters.length">还原</button>
+                    </div>
+                    <div class="zodiac-options" role="group" aria-label="选择生肖">
+                        <template x-for="z in zodiacList" :key="'zf'+z">
+                            <button class="zodiac-option" @click="toggleZodiacFilter(z)"
+                                :aria-pressed="zodiacFilters.includes(z)" x-text="z"></button>
+                        </template>
+                    </div>
+                    <p class="zodiac-status" aria-live="polite" x-text="zodiacFilters.length?'已选：'+zodiacFilters.join('、')+' · 再次点击取消':'全部号码正常显示'"></p>
+                </section>
                 <section class="zodiac-count-panel" aria-label="查看开过几肖">
                     <strong class="text-sm text-slate-700">查看开过几肖</strong>
                     <div class="zodiac-count-options" role="group" aria-label="按每期生肖数量筛选">
                         <button class="zodiac-count-option" @click="zodiacCountFilter=null" :aria-pressed="zodiacCountFilter===null">全部</button>
-                        <template x-for="count in [7,6,5,4,3,2]" :key="'count'+count">
+                        <template x-for="count in [7,6,5,4]" :key="'count'+count">
                             <button class="zodiac-count-option" @click="toggleZodiacCount(count)" :aria-pressed="zodiacCountFilter===count">
                                 <strong x-text="count+'肖'"></strong>
                                 <span x-text="getZodiacCountStats().counts[count]+'期'"></span>
                             </button>
                         </template>
                     </div>
-                    <p class="zodiac-status" aria-live="polite" x-text="zodiacCountFilter===null?'点选几肖，其他开奖记录置灰，位置保持不变。':'已标记 '+zodiacCountFilter+'肖，其他记录置灰；所有记录位置保持不变。'"></p>
-                    <p class="zodiac-status" x-text="getZodiacCountSummary()"></p>
                 </section>
+                <section class="sequence-toolbar" aria-label="手动选期分析设置">
+                    <div class="sequence-toolbar-title">
+                        <strong>手动选期分析</strong>
+                        <span>逐期点击“选择本期”，只计算你亲自勾选的记录</span>
+                    </div>
+                    <div class="sequence-toolbar-actions">
+                        <span class="manual-selection-count" x-text="'已选 '+getSelectedAnalysisDraws().length+' 期'"></span>
+                        <span class="manual-selection-summary" x-show="getSelectedAnalysisDraws().length" x-text="getManualAnalysisSummary()"></span>
+                        <div class="sequence-control-group" x-show="getSelectedAnalysisDraws().length>=2||isCombinationRunSelection()" role="group" aria-label="历史范围">
+                            <span class="sequence-control-label">范围</span>
+                            <button class="sequence-option" @click="setAnalysisScope('year')" :aria-pressed="analysisScope==='year'">本年</button>
+                            <button class="sequence-option" @click="setAnalysisScope('all')" :aria-pressed="analysisScope==='all'"
+                                :disabled="analysisAllLoading" x-text="analysisAllLoading?'加载中…':'全部历史'"></button>
+                        </div>
+                        <button class="sequence-option" x-show="getSelectedAnalysisDraws().length" @click="analysisDetailsOpen=!analysisDetailsOpen"
+                            :aria-pressed="analysisDetailsOpen" x-text="analysisDetailsOpen?'收起结果':'查看结果'"></button>
+                        <button class="analysis-clear" x-show="getSelectedAnalysisDraws().length" @click="clearAnalysisSelection()">清除选择</button>
+                    </div>
+                </section>
+                <section class="triple-run-toolbar" x-show="isCombinationRunSelection()" x-cloak aria-label="生肖组合连续同开">
+                    <div>
+                        <strong x-text="getRunSelectionLabel()+'连续同开：'+zodiacFilters.join('、')"></strong>
+                        <p x-text="getSelectedTripleRunSummary()"></p>
+                    </div>
+                    <button class="sequence-option" @click="tripleRunOpen=!tripleRunOpen" :aria-pressed="tripleRunOpen"
+                        x-text="tripleRunOpen?'收起同类组合':'查看同类组合'"></button>
+                </section>
+            </div>
+
+            <section class="triple-run-results" x-show="tripleRunOpen&&isCombinationRunSelection()" x-cloak aria-label="连续三期同开生肖组合结果">
+                <div class="triple-run-head">
+                    <div>
+                        <h3 x-text="'任意'+getRunSelectionLabel()+'连续3期同开'"></h3>
+                        <p x-text="'判定口径：同一组'+getRunSelectionLabel()+'必须在连续3期开奖的全部7个号码中，每一期全部出现。'"></p>
+                    </div>
+                    <button class="analysis-clear" @click="tripleRunOpen=false">关闭</button>
+                </div>
+                <div class="triple-run-selected">
+                    <strong x-text="zodiacFilters.join('、')"></strong>
+                    <span x-text="' · '+getSelectedTripleRunDetail()"></span>
+                </div>
+                <p class="history-match-summary" style="padding:0 18px 10px" x-text="getTripleRunResultsSummary()"></p>
+                <div class="triple-run-grid" x-show="getTripleRunPatterns().length">
+                    <template x-for="item in getTripleRunPatterns()" :key="'triple-run-'+item.key">
+                        <article class="triple-run-card" :class="{'selected':item.isSelected}">
+                            <div class="triple-run-card-head">
+                                <strong x-text="item.zodiacs.join('、')+(item.isSelected?' · 你选的':'')"></strong>
+                                <span x-text="'最长'+item.longest+'期 · '+item.runs.length+'段'"></span>
+                            </div>
+                            <p class="triple-run-ranges" x-text="formatTripleRunRanges(item)"></p>
+                        </article>
+                    </template>
+                </div>
+                <p class="triple-run-empty" x-show="!analysisAllLoading&&!getTripleRunPatterns().length" x-text="'当前范围没有找到连续3期每期同时出现的'+getRunSelectionLabel()+'组合。'"></p>
+                <p class="analysis-disclaimer" style="padding:0 18px 14px">这里只整理历史共现结构，不代表下一期会继续出现。</p>
+            </section>
+
+            <section class="window-analysis-panel" x-show="analysisDetailsOpen&&getSelectedAnalysisDraws().length" x-cloak aria-label="手动选期分析结果">
+                <div class="window-analysis-head">
+                    <div>
+                        <h3>手选开奖记录统计</h3>
+                        <p x-text="getWindowAnalysisTitle()"></p>
+                    </div>
+                    <button class="analysis-clear" @click="analysisDetailsOpen=false">关闭</button>
+                </div>
+                <div class="analysis-summary-grid">
+                    <div class="analysis-summary-card"><span>几肖序列</span><strong x-text="getWindowAnalysis()?.sequenceLabel||'—'"></strong></div>
+                    <div class="analysis-summary-card"><span>合计开出</span><strong x-text="(getWindowAnalysis()?.union.length||0)+'肖'"></strong></div>
+                    <div class="analysis-summary-card"><span>所选期未开</span><strong x-text="getWindowAnalysis()?.missing.join('、')||'无'"></strong></div>
+                    <div class="analysis-summary-card"><span>每期都开</span><strong x-text="getWindowAnalysis()?.common.join('、')||'无'"></strong></div>
+                </div>
+                <div class="analysis-detail">
+                    <div class="analysis-detail-row">
+                        <span class="analysis-detail-label">生肖覆盖</span>
+                        <div class="analysis-chip-list">
+                            <template x-for="item in getWindowAnalysis()?.coverage||[]" :key="'coverage-'+item.zodiac">
+                                <span class="analysis-chip" :class="{'complete':item.count===getSelectedAnalysisDraws().length}"
+                                    x-text="item.zodiac+' '+item.count+'/'+getSelectedAnalysisDraws().length+'期'"></span>
+                            </template>
+                        </div>
+                    </div>
+                    <div class="analysis-detail-row">
+                        <span class="analysis-detail-label">未开生肖</span>
+                        <div class="analysis-chip-list">
+                            <template x-for="z in getWindowAnalysis()?.missing||[]" :key="'missing-'+z">
+                                <span class="analysis-chip missing" x-text="z"></span>
+                            </template>
+                            <span class="analysis-chip" x-show="!(getWindowAnalysis()?.missing.length)">12肖均有开出</span>
+                        </div>
+                    </div>
+                    <div class="analysis-detail-row" x-show="zodiacFilters.length">
+                        <span class="analysis-detail-label">所选生肖</span>
+                        <div class="analysis-chip-list">
+                            <template x-for="item in getWindowAnalysis()?.selectedCoverage||[]" :key="'selected-coverage-'+item.zodiac">
+                                <span class="analysis-chip" :class="{'complete':item.count===getSelectedAnalysisDraws().length}"
+                                    x-text="item.zodiac+' '+item.count+'/'+getSelectedAnalysisDraws().length+'期'"></span>
+                            </template>
+                            <span class="analysis-chip" x-text="getSelectedZodiacRunSummary()"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="history-match-panel" x-show="getSelectedAnalysisDraws().length>=2">
+                    <div class="match-mode-row" role="group" aria-label="历史匹配方式">
+                        <button class="match-mode" @click="analysisMatchMode='sequence'" :aria-pressed="analysisMatchMode==='sequence'">同几肖序列</button>
+                        <button class="match-mode" @click="analysisMatchMode='structure'" :aria-pressed="analysisMatchMode==='structure'">同结构</button>
+                        <button class="match-mode" @click="analysisMatchMode='zodiac'" :aria-pressed="analysisMatchMode==='zodiac'">所选生肖每期都开</button>
+                        <button class="match-mode" @click="analysisMatchMode='analog'" :aria-pressed="analysisMatchMode==='analog'">相似生肖组合</button>
+                    </div>
+                    <p class="history-match-summary" x-text="getHistoryMatchSummary()"></p>
+                    <div class="history-match-list">
+                        <template x-for="match in getActiveHistoryMatches().slice(0,20)" :key="analysisMatchMode+'-'+match.start+'-'+match.end">
+                            <button class="history-match" :class="{'current':match.isCurrent}" @click="jumpToAnalysisMatch(match)">
+                                <span><strong x-text="match.start+'—'+match.end"></strong><span x-text="match.sequenceLabel"></span></span>
+                                <span class="match-common"><strong x-text="match.common.length?match.common.join('、'):'无共同生肖'"></strong><span x-text="'合计开'+match.unionCount+'肖 · 缺'+match.missingCount+'肖'"></span></span>
+                            </button>
+                        </template>
+                    </div>
+                    <p class="history-match-summary" x-show="getActiveHistoryMatches().length>20" x-text="'仅显示前20组，共 '+getActiveHistoryMatches().length+' 组'"></p>
+                    <p class="analysis-disclaimer">历史相似只描述过去数据，不代表下一期开奖规律。</p>
+                </div>
+                <p class="history-match-summary" x-show="getSelectedAnalysisDraws().length===1" style="padding:0 18px 16px">再手动选择至少1期后，才显示历史对比。</p>
+            </section>
+
             <div id="year-draw-records" class="draw-records" role="tabpanel" :aria-labelledby="'year-tab-'+selectedYear" :aria-busy="yearLoading">
                 <div class="draw-empty" x-show="yearLoading" role="status">正在加载该年开奖记录…</div>
                 <div class="draw-empty" x-show="yearError" role="alert">
@@ -294,7 +490,7 @@
                     <button class="zodiac-reset" @click="selectDrawYear(selectedYear)">重试</button>
                 </div>
                     <template x-for="d in getFilteredDraws()" :key="'record'+d.period">
-                    <article class="draw-record" :class="{'record-muted':isDrawMuted(d)}">
+                    <article class="draw-record" :id="'draw-record-'+d.period" :class="{'record-muted':isDrawMuted(d),'analysis-selected':isAnalysisDrawSelected(d)}">
                         <div class="record-heading">
                             <strong>第 <span x-text="d.period"></span> 期</strong>
                             <time x-text="d.date"></time>
@@ -314,6 +510,8 @@
                         </div>
                         <div class="record-details">
                             <button class="record-count" @click="toggleZodiacCount(getDrawZodiacCount(d))" :aria-pressed="zodiacCountFilter===getDrawZodiacCount(d)" :aria-label="'标记'+getDrawZodiacCount(d)+'肖开奖记录'" x-text="getDrawZodiacCount(d)===null?'数据不完整':getDrawZodiacCount(d)+'肖'" :disabled="getDrawZodiacCount(d)===null||isDrawMuted(d)"></button>
+                            <button class="analysis-pick" @click="toggleAnalysisDraw(d)" :aria-pressed="isAnalysisDrawSelected(d)"
+                                x-text="isAnalysisDrawSelected(d)?'已选本期':'选择本期'"></button>
                             <span class="record-special-label">特码</span>
                             <span x-text="getColorLabel(d.special)"></span>
                             <span x-text="d.zodiac || getZodiac(d.special)"></span>
@@ -1004,6 +1202,7 @@ function computeAnalysis(draws, range) {
 }
 
 // ==================== Main App ====================
+const TRIPLE_RUN_CACHE={key:'',patterns:[],selectedKey:'',view:[]};
 function app() {
     return {
         activeTab:'draws',
@@ -1018,6 +1217,8 @@ function app() {
         cy, selectedYear:cy, drawYears:Array.from({length:Math.max(1,cy-2020+1)},(_,i)=>cy-i),
         yearDrawsCache:{}, yearSources:{}, yearLoading:false, yearError:'', yearRequestId:0,
         searchTerm:'', zodiacFilters:[], zodiacCountFilter:null,
+        analysisSelectedPeriods:[], analysisDetailsOpen:false, analysisScope:'year', analysisMatchMode:'sequence', tripleRunOpen:false,
+        analysisAllLoading:false, analysisAllError:'', analysisHistoryVersion:0,
         analysisTab:'overview',
         analysisTabs:[{id:'overview',name:'总览'},{id:'frequency',name:'频率'},{id:'attributes',name:'属性'}],
         analysisRange:50, analysis:null,
@@ -1152,7 +1353,7 @@ function app() {
         getColor,getColorLabel,getZodiac,getElement,getHead,getTail,pad,colorHex,
 
         async selectDrawYear(year,focus=false) {
-            this.selectedYear=year;this.searchTerm='';this.yearError='';
+            this.selectedYear=year;this.searchTerm='';this.yearError='';this.clearAnalysisSelection();
             if(focus)this.$nextTick(()=>document.getElementById('year-tab-'+year)?.focus());
             const requestId=++this.yearRequestId;
             if(Object.prototype.hasOwnProperty.call(this.yearDrawsCache,year)){this.yearLoading=false;return;}
@@ -1179,6 +1380,291 @@ function app() {
             return d.normal_zodiacs?.[index]||getZodiac(n);
         },
 
+        getDrawZodiacSet(d) {
+            if(!d||!Array.isArray(d.numbers)||d.numbers.length!==6)return new Set();
+            const nums=[...d.numbers,d.special];
+            if(nums.some(n=>!Number.isInteger(n)||n<1||n>49)||new Set(nums).size!==7)return new Set();
+            return new Set([
+                ...d.numbers.map(n=>this.getRecordZodiac(n,d)),
+                d.zodiac||this.getRecordZodiac(d.special,d),
+            ].filter(z=>this.zodiacList.includes(z)));
+        },
+
+        clearAnalysisSelection() {
+            this.analysisSelectedPeriods=[];
+            this.analysisDetailsOpen=false;
+        },
+        toggleAnalysisDraw(d) {
+            const index=this.analysisSelectedPeriods.indexOf(d.period);
+            if(index>=0)this.analysisSelectedPeriods.splice(index,1);
+            else this.analysisSelectedPeriods.push(d.period);
+            if(!this.analysisSelectedPeriods.length)this.analysisDetailsOpen=false;
+        },
+        getSelectedAnalysisDraws() {
+            if(!this.analysisSelectedPeriods.length)return [];
+            const selected=new Set(this.analysisSelectedPeriods);
+            return this.getYearDraws().filter(d=>selected.has(d.period));
+        },
+        isAnalysisDrawSelected(d) {
+            return this.analysisSelectedPeriods.includes(d.period);
+        },
+        getWindowAnalysisFromRows(rows) {
+            if(!rows.length)return null;
+            const sets=rows.map(d=>this.getDrawZodiacSet(d));
+            if(sets.some(set=>!set.size))return null;
+            const union=new Set();
+            sets.forEach(set=>set.forEach(z=>union.add(z)));
+            const common=this.zodiacList.filter(z=>sets.every(set=>set.has(z)));
+            const coverage=this.zodiacList.map(z=>({zodiac:z,count:sets.filter(set=>set.has(z)).length}))
+                .filter(item=>item.count>0).sort((a,b)=>b.count-a.count||this.zodiacList.indexOf(a.zodiac)-this.zodiacList.indexOf(b.zodiac));
+            const selectedCoverage=this.zodiacFilters.map(z=>({zodiac:z,count:sets.filter(set=>set.has(z)).length}));
+            const sequence=sets.map(set=>set.size);
+            const adjacentOverlaps=[];
+            for(let i=0;i<sets.length-1;i++)adjacentOverlaps.push([...sets[i]].filter(z=>sets[i+1].has(z)).length);
+            return {
+                rows,sets,sequence,sequenceLabel:sequence.map(n=>n+'肖').join(' → '),
+                union:this.zodiacList.filter(z=>union.has(z)),missing:this.zodiacList.filter(z=>!union.has(z)),
+                common,coverage,selectedCoverage,adjacentOverlaps,
+            };
+        },
+        getWindowAnalysis() {
+            return this.getWindowAnalysisFromRows(this.getSelectedAnalysisDraws());
+        },
+        getManualAnalysisSummary() {
+            const analysis=this.getWindowAnalysis();
+            if(!analysis)return '';
+            return '合计 '+analysis.union.length+'肖 · 未开 '+(analysis.missing.length?analysis.missing.join('、'):'无');
+        },
+        getWindowAnalysisTitle() {
+            const rows=this.getSelectedAnalysisDraws();
+            if(!rows.length)return '';
+            return '已手动选择 '+rows.length+' 期：'+rows.map(row=>row.period).join('、')+' · 七球生肖去重统计';
+        },
+        isCombinationRunSelection() {
+            return this.zodiacFilters.length>=2&&this.zodiacFilters.length<=4;
+        },
+        getRunSelectionLabel() {
+            return ({2:'二肖',3:'三肖',4:'四肖'})[this.zodiacFilters.length]||'生肖组合';
+        },
+        getZodiacCombinations(size) {
+            const combinations=[];
+            const build=(start,current)=>{
+                if(current.length===size){combinations.push([...current]);return;}
+                for(let i=start;i<=this.zodiacList.length-(size-current.length);i++){
+                    current.push(this.zodiacList[i]);
+                    build(i+1,current);
+                    current.pop();
+                }
+            };
+            build(0,[]);
+            return combinations;
+        },
+        getTripleKey(zodiacs) {
+            return [...zodiacs].sort((a,b)=>this.zodiacList.indexOf(a)-this.zodiacList.indexOf(b)).join('|');
+        },
+        areDrawPeriodsAdjacent(newer,older) {
+            const a=String(newer?.period||''),b=String(older?.period||'');
+            return a.slice(0,4)===b.slice(0,4)&&Number(a)-Number(b)===1;
+        },
+        getTripleRunsForRows(rows,triple,minLength=1) {
+            const tripleMask=triple.reduce((mask,z)=>mask|(1<<this.zodiacList.indexOf(z)),0);
+            const prepared=rows.map(row=>({
+                period:row?.period,
+                mask:[...this.getDrawZodiacSet(row)].reduce((mask,z)=>mask|(1<<this.zodiacList.indexOf(z)),0),
+            }));
+            return this.getTripleRunsFromPreparedRows(prepared,tripleMask,minLength);
+        },
+        getTripleRunsFromPreparedRows(rows,tripleMask,minLength=1) {
+            const runs=[];let active=[];
+            const flush=()=>{
+                if(active.length>=minLength){
+                    runs.push({
+                        year:Number(String(active[0].period).slice(0,4)),
+                        start:active[0].period,end:active[active.length-1].period,length:active.length,
+                        periods:active.map(row=>row.period),
+                    });
+                }
+                active=[];
+            };
+            const seen=new Set();
+            for(const row of rows){
+                if(!row?.period||seen.has(row.period))continue;
+                seen.add(row.period);
+                if(active.length&&!this.areDrawPeriodsAdjacent(active[active.length-1],row))flush();
+                const hit=row.mask&&(row.mask&tripleMask)===tripleMask;
+                if(hit)active.push(row);else flush();
+            }
+            flush();
+            return runs;
+        },
+        getTripleRunPatterns() {
+            if(!this.isCombinationRunSelection())return [];
+            const width=this.zodiacFilters.length;
+            const groups=this.getAnalysisYearGroups();
+            const cacheKey=[width,this.analysisScope,this.selectedYear,this.analysisHistoryVersion,
+                ...groups.map(group=>group.year+':'+group.rows.length+':'+(group.rows[0]?.period||'')+':'+(group.rows[group.rows.length-1]?.period||''))].join('|');
+            const selectedKey=this.getTripleKey(this.zodiacFilters);
+            if(TRIPLE_RUN_CACHE.key!==cacheKey){
+                const patterns=[];
+                const preparedGroups=groups.map(group=>({
+                    year:group.year,
+                    rows:group.rows.map(row=>({
+                        period:row?.period,
+                        mask:[...this.getDrawZodiacSet(row)].reduce((mask,z)=>mask|(1<<this.zodiacList.indexOf(z)),0),
+                    })),
+                }));
+                for(const combination of this.getZodiacCombinations(width)){
+                    const tripleMask=combination.reduce((mask,z)=>mask|(1<<this.zodiacList.indexOf(z)),0);
+                    const runs=[];
+                    for(const group of preparedGroups)runs.push(...this.getTripleRunsFromPreparedRows(group.rows,tripleMask,3));
+                    if(!runs.length)continue;
+                    runs.sort((a,b)=>Number(b.start)-Number(a.start));
+                    patterns.push({
+                        key:this.getTripleKey(combination),zodiacs:combination,runs,longest:Math.max(...runs.map(run=>run.length)),
+                    });
+                }
+                TRIPLE_RUN_CACHE.key=cacheKey;
+                TRIPLE_RUN_CACHE.patterns=patterns;
+                TRIPLE_RUN_CACHE.selectedKey='';
+            }
+            if(TRIPLE_RUN_CACHE.selectedKey!==selectedKey||!TRIPLE_RUN_CACHE.view.length){
+                TRIPLE_RUN_CACHE.selectedKey=selectedKey;
+                TRIPLE_RUN_CACHE.view=TRIPLE_RUN_CACHE.patterns.map(item=>({...item,isSelected:item.key===selectedKey}))
+                    .sort((a,b)=>Number(b.isSelected)-Number(a.isSelected)||b.longest-a.longest||b.runs.length-a.runs.length||Number(b.runs[0].start)-Number(a.runs[0].start));
+            }
+            return TRIPLE_RUN_CACHE.view;
+        },
+        getSelectedTripleRuns() {
+            if(!this.isCombinationRunSelection())return [];
+            const selectedKey=this.getTripleKey(this.zodiacFilters);
+            return this.getTripleRunPatterns().find(item=>item.key===selectedKey)?.runs||[];
+        },
+        getSelectedTripleRunDetail() {
+            if(this.analysisAllLoading)return '正在加载全部年份历史数据…';
+            if(this.analysisAllError)return this.analysisAllError;
+            if(!this.isCombinationRunSelection())return '请选择2到4个生肖';
+            const qualifying=this.getSelectedTripleRuns().filter(run=>run.length>=3);
+            if(!qualifying.length)return (this.analysisScope==='all'?'全部已加载年份':this.selectedYear+'年')+'没有连续3期每期同时出现的记录';
+            const newest=this.getYearDraws()[0]?.period;
+            const current=qualifying.find(run=>run.year===this.selectedYear&&run.start===newest);
+            const longest=Math.max(...qualifying.map(run=>run.length));
+            if(current)return '当前连续'+current.length+'期（'+current.start+'—'+current.end+'）；历史共'+qualifying.length+'段，最长'+longest+'期';
+            const latest=qualifying[0];
+            return '历史共'+qualifying.length+'段，最长'+longest+'期；最近 '+latest.start+'—'+latest.end;
+        },
+        getSelectedTripleRunSummary() {
+            if(!this.isCombinationRunSelection())return '';
+            const total=this.getTripleRunPatterns().length;
+            return this.getSelectedTripleRunDetail()+' · 任意'+this.getRunSelectionLabel()+'共'+total+'组符合';
+        },
+        getTripleRunResultsSummary() {
+            if(this.analysisAllLoading)return '正在加载全部年份历史数据…';
+            if(this.analysisAllError)return this.analysisAllError;
+            const scope=this.analysisScope==='all'?'全部已加载年份':this.selectedYear+'年';
+            return scope+'共有 '+this.getTripleRunPatterns().length+' 组任意'+this.getRunSelectionLabel()+'，曾连续至少3期在每一期同时出现。';
+        },
+        formatTripleRunRanges(item) {
+            const shown=item.runs.slice(0,4).map(run=>run.start+'—'+run.end+'（'+run.length+'期）');
+            if(item.runs.length>4)shown.push('另有'+(item.runs.length-4)+'段');
+            return shown.join('；');
+        },
+        async setAnalysisScope(scope) {
+            this.analysisScope=scope;
+            if(scope==='all')await this.loadAllAnalysisYears();
+        },
+        async loadAllAnalysisYears() {
+            if(this.analysisAllLoading)return;
+            const missing=this.drawYears.filter(year=>!Object.prototype.hasOwnProperty.call(this.yearDrawsCache,year));
+            if(!missing.length)return;
+            this.analysisAllLoading=true;this.analysisAllError='';
+            const failures=[];
+            await Promise.all(missing.map(async year=>{
+                try {
+                    const r=await fetch('/api/draws?year='+year),result=await r.json();
+                    if(!r.ok||!result.success)throw new Error(result.error||'加载失败');
+                    this.yearDrawsCache[year]=result.data.filter(d=>String(d.date).startsWith(year+'-'));
+                    this.yearSources[year]=result.source||'';
+                } catch(e) { failures.push(year); }
+            }));
+            this.analysisAllError=failures.length?'以下年份加载失败：'+failures.join('、'):'';
+            this.analysisHistoryVersion++;
+            this.analysisAllLoading=false;
+        },
+        getAnalysisYearGroups() {
+            void this.analysisHistoryVersion;
+            if(this.analysisScope==='year')return [{year:this.selectedYear,rows:this.getYearDraws()}];
+            return this.drawYears.map(year=>({year,rows:this.yearDrawsCache[year]||[]})).filter(group=>group.rows.length);
+        },
+        getHistoryWindows() {
+            const windows=[];
+            const size=this.getSelectedAnalysisDraws().length;
+            if(size<2)return windows;
+            for(const group of this.getAnalysisYearGroups()){
+                const seen=new Set(),rows=group.rows.filter(d=>d.period&&!seen.has(d.period)&&seen.add(d.period));
+                for(let i=0;i<=rows.length-size;i++){
+                    const slice=rows.slice(i,i+size),analysis=this.getWindowAnalysisFromRows(slice);
+                    if(!analysis)continue;
+                    windows.push({
+                        ...analysis,year:group.year,start:slice[0].period,end:slice[slice.length-1].period,
+                        unionCount:analysis.union.length,missingCount:analysis.missing.length,
+                    });
+                }
+            }
+            return windows;
+        },
+        getWindowStructureKey(analysis) {
+            if(!analysis)return '';
+            return [analysis.sequence.join('-'),analysis.adjacentOverlaps.join('-'),analysis.common.length,analysis.union.length].join('|');
+        },
+        getHistoryMatches(mode) {
+            const target=this.getWindowAnalysis();
+            if(!target||target.rows.length<2)return [];
+            const targetSequence=target.sequence.join('-'),targetStructure=this.getWindowStructureKey(target);
+            const selected=[...this.zodiacFilters],base=selected.length?selected:target.common;
+            const baseKey=[...base].sort().join('|');
+            return this.getHistoryWindows().filter(item=>{
+                if(mode==='sequence')return item.sequence.join('-')===targetSequence;
+                if(mode==='structure')return this.getWindowStructureKey(item)===targetStructure;
+                if(mode==='zodiac')return selected.length>0&&item.sets.every(set=>selected.every(z=>set.has(z)));
+                if(mode==='analog')return base.length>0&&item.common.length===base.length&&[...item.common].sort().join('|')!==baseKey;
+                return false;
+            }).map(item=>({...item,isCurrent:item.rows.map(row=>row.period).join('|')===target.rows.map(row=>row.period).join('|')}));
+        },
+        getActiveHistoryMatches() {
+            return this.getHistoryMatches(this.analysisMatchMode);
+        },
+        getHistoryMatchSummary() {
+            if(this.analysisAllLoading)return '正在加载全部年份历史数据…';
+            if(this.analysisAllError)return this.analysisAllError;
+            if(this.getSelectedAnalysisDraws().length<2)return '请至少手动选择2期开奖记录。';
+            const count=this.getActiveHistoryMatches().length,scope=this.analysisScope==='all'?'全部已加载年份':this.selectedYear+'年';
+            if(this.analysisMatchMode==='zodiac'&&!this.zodiacFilters.length)return '请先在上方选择要统计的生肖，例如马、龙。';
+            const labels={sequence:'相同几肖顺序',structure:'几肖、相邻重复、共同生肖数和缺肖数均相同',zodiac:'所选生肖在窗口内每期都出现',analog:'共同生肖数量相同、但生肖名称不同'};
+            return scope+'找到 '+count+' 组：'+labels[this.analysisMatchMode]+'。';
+        },
+        getSelectedZodiacRunStats() {
+            if(!this.zodiacFilters.length)return {longest:0,windows:0};
+            let longest=0;
+            for(const group of this.getAnalysisYearGroups()){
+                let run=0;
+                for(const d of group.rows){
+                    const set=this.getDrawZodiacSet(d),hit=set.size&&this.zodiacFilters.every(z=>set.has(z));
+                    run=hit?run+1:0;if(run>longest)longest=run;
+                }
+            }
+            return {longest,windows:this.getHistoryMatches('zodiac').length};
+        },
+        getSelectedZodiacRunSummary() {
+            if(!this.zodiacFilters.length)return '';
+            const stats=this.getSelectedZodiacRunStats();
+            return '历史最长连续 '+stats.longest+'期 · 同长度窗口 '+stats.windows+'组';
+        },
+        jumpToAnalysisMatch(match) {
+            this.selectedYear=Number(match.year);this.searchTerm='';this.zodiacCountFilter=null;
+            this.analysisSelectedPeriods=match.rows.map(row=>row.period);this.analysisDetailsOpen=true;
+            this.$nextTick(()=>document.getElementById('draw-record-'+match.start)?.scrollIntoView({behavior:'smooth',block:'center'}));
+        },
+
         getFilteredDraws() {
             const t=this.searchTerm;
             return this.getYearDraws().filter(d=>
@@ -1186,11 +1672,8 @@ function app() {
                 d.numbers.some(n=>pad(n).includes(t))||pad(d.special).includes(t)));
         },
         getDrawZodiacCount(d) {
-            if(!Array.isArray(d.numbers)||d.numbers.length!==6)return null;
-            const nums=[...d.numbers,d.special];
-            if(nums.some(n=>!Number.isInteger(n)||n<1||n>49)||new Set(nums).size!==7)return null;
-            // Zodiac assignments rotate by year; equality of n % 12 is invariant.
-            return new Set(nums.map(n=>n%12)).size;
+            const set=this.getDrawZodiacSet(d);
+            return set.size||null;
         },
         getZodiacCountStats() {
             const counts={2:0,3:0,4:0,5:0,6:0,7:0}, seen=new Set(), periods=[];
@@ -1221,6 +1704,7 @@ function app() {
         toggleZodiacFilter(z) {
             const idx=this.zodiacFilters.indexOf(z);
             if(idx>-1)this.zodiacFilters.splice(idx,1); else this.zodiacFilters.push(z);
+            if(!this.isCombinationRunSelection())this.tripleRunOpen=false;
         },
         zodiacClass(n,d=null) {
             if(!this.zodiacFilters.length)return '';

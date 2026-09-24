@@ -1,6 +1,3 @@
-# 一键启动 Lottery_mobile Flask 服务（使用 WorkBuddy managed Python）
-$python = "C:\Users\17497\.workbuddy\binaries\python\versions\3.13.12\python.exe"
-$serverDir = Join-Path $PSScriptRoot "server"
-Set-Location $serverDir
-Write-Host "启动澳门六合彩AI助手..." -ForegroundColor Green
-& $python app.py
+# 共用 start.bat 的 Python 检测、虚拟环境和依赖安装逻辑。
+& (Join-Path $PSScriptRoot 'start.bat')
+exit $LASTEXITCODE
