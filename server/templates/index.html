@@ -489,7 +489,7 @@
                     <span x-text="yearError"></span>
                     <button class="zodiac-reset" @click="selectDrawYear(selectedYear)">重试</button>
                 </div>
-                    <template x-for="d in getFilteredDraws()" :key="'record'+d.period">
+                    <template x-for="(d, drawIndex) in getFilteredDraws()" :key="'record-'+d.period+'-'+drawIndex">
                     <article class="draw-record" :id="'draw-record-'+d.period" :class="{'record-muted':isDrawMuted(d),'analysis-selected':isAnalysisDrawSelected(d)}">
                         <div class="record-heading">
                             <strong>第 <span x-text="d.period"></span> 期</strong>

@@ -139,6 +139,16 @@ class LotteryScraper:
         self._cache_source = ''
         self._year_cache = {}
 
+    @staticmethod
+    def _deduplicate_draws(draws):
+        """按期号去重，防止上游重复记录破坏前端列表渲染。"""
+        unique = {}
+        for draw in draws or []:
+            period = str(draw.get('period', '')).strip()
+            if period and period not in unique:
+                unique[period] = draw
+        return sorted(unique.values(), key=lambda draw: draw['period'], reverse=True)
+
     def fetch_year(self, year):
         cached = self._year_cache.get(year)
         if cached and time.time() - cached['time'] < CACHE_DURATION:
@@ -148,8 +158,7 @@ class LotteryScraper:
             return {'success': False, 'error': '该年份数据暂时无法获取，请重试'}
         # The upstream current-year response can include last year's records.
         draws = [d for d in draws if str(d.get('date', '')).startswith(str(year) + '-')]
-        draws = list({d['period']: d for d in draws}.values())
-        draws.sort(key=lambda d: d['period'], reverse=True)
+        draws = self._deduplicate_draws(draws)
         self._year_cache[year] = {'time': time.time(), 'data': draws, 'source': source}
         return {'success': True, 'data': draws, 'source': source}
 
@@ -175,6 +184,15 @@ class LotteryScraper:
             draws = self._generate_mock_data(count)
             source = '模拟数据（所有 API 暂不可用）'
             logger.warning("所有 API 不可用，使用模拟数据")
+
+        original_count = len(draws)
+        draws = self._deduplicate_draws(draws)
+        if len(draws) != original_count:
+            logger.warning(
+                "上游返回重复期号，已从 %d 条去重为 %d 条",
+                original_count,
+                len(draws),
+            )
 
         self._cache = draws
         self._cache_time = time.time()
