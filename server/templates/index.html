@@ -36,14 +36,30 @@
 
         /* 生肖筛选高亮 */
         .draw-hall{font-family:"Microsoft YaHei","PingFang SC",sans-serif;max-width:1000px;margin-inline:auto}
-        .draw-hall .latest-draw{background:#eff6ff;border:1px solid #dbeafe;border-radius:14px;padding:16px 18px;margin-bottom:12px;color:#334155}
+        .number-reference{background:#fff;border:1px solid #e1e7eb;border-radius:12px;padding:14px 16px;margin-bottom:12px}
+        .number-reference-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+        .number-reference-heading h3{font-size:16px;font-weight:700;color:#1e293b}
+        .number-reference-year{font-size:12px;color:#1d4ed8;background:#eff6ff;border-radius:6px;padding:4px 8px;white-space:nowrap}
+        .number-reference-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;list-style:none}
+        .number-reference-cell{display:flex;align-items:center;justify-content:center;gap:10px;min-width:0;padding:5px 4px;border:1px solid #edf0f3;border-radius:6px;background:#f8fafc}
+        .number-reference-value{display:flex;align-items:center;gap:5px;font-size:19px;font-weight:750;font-variant-numeric:tabular-nums;color:#1e293b;line-height:1.25}
+        .number-reference-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+        .number-reference-zodiac{font-size:14px;font-weight:600;line-height:1.3;color:#475569}
+        @media(max-width:639px){
+            .number-reference{padding:12px}
+            .number-reference-heading h3{font-size:14px}
+            .number-reference-grid{gap:4px}
+            .number-reference-cell{flex-direction:column;gap:3px;padding:5px 1px}
+            .number-reference-value{font-size:17px;gap:3px}
+            .number-reference-dot{width:4px;height:4px}
+            .number-reference-zodiac{font-size:12px}
+        }
         .draw-number-row{display:flex;align-items:center;gap:6px;flex-wrap:nowrap}
         .draw-hall .draw-number-row .ball-square{width:36px;height:46px;border-radius:7px;box-shadow:inset 0 0 0 1px #00000008;transition:box-shadow .16s ease,background-color .16s ease;color:#fff}
         .draw-hall .draw-number-row .sq-num{font-size:17px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.4px}
         .draw-hall .draw-number-row .sq-zodiac{font-size:10px;margin-top:4px;opacity:1}
         .draw-plus{width:10px;flex-shrink:0;text-align:center;font-size:14px;opacity:.6}
         .draw-hall .zodiac-dim{background:#f1f2f4;color:#6b7280!important;box-shadow:none!important}
-        .draw-hall .latest-draw h3{color:#1d4ed8}
         .draw-hall .zodiac-hit{outline:2px solid #2563eb;outline-offset:2px}
         .zodiac-panel{background:#fff;border:1px solid #e1e7eb;border-radius:12px;padding:12px 16px;margin-bottom:12px}
         .zodiac-panel-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
@@ -143,7 +159,6 @@
         @media(max-width:900px){.draw-record{grid-template-columns:170px 1fr;gap:12px}.record-details{grid-column:2}}
         @media(max-width:639px){
             .draw-filters-sticky{position:static}
-            .draw-hall .latest-draw{padding:14px}
             .zodiac-options{grid-template-columns:repeat(6,minmax(0,1fr));gap:8px}
             .sequence-toolbar{align-items:flex-start}.sequence-toolbar-actions{width:100%}
             .analysis-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr));padding:12px}
@@ -188,7 +203,6 @@
             .sequence-toolbar-title strong{font-size:16px}.sequence-toolbar-title span{font-size:13px}
             .sequence-option,.analysis-pick,.match-mode,.analysis-clear{font-size:14px}
             .draw-hall input,.draw-hall input+span{font-size:15px}
-            .draw-hall .latest-draw .text-xs{font-size:14px}
         }
         @media(min-width:1100px){
             .draw-record{grid-template-columns:190px 404px minmax(0,1fr);gap:24px}
@@ -284,37 +298,24 @@
 
         <!-- ============ 开奖大厅 ============ -->
         <div x-show="activeTab==='draws'&&!loading" x-cloak class="fade-in draw-hall">
-            <!-- Latest draw -->
-            <template x-if="draws.length>0">
-            <div class="latest-draw">
-                <div class="flex items-center justify-between mb-2">
-                    <div>
-                        <span class="text-[10px] sm:text-xs opacity-80">最新一期开奖</span>
-                        <h3 class="text-lg sm:text-2xl font-bold" x-text="'第 '+draws[0].period+' 期'"></h3>
-                    </div>
-                    <span class="text-xs opacity-80" x-text="draws[0].date"></span>
+            <!-- Current lunar-year number reference; historical draws retain their own zodiac data. -->
+            <section class="number-reference" aria-labelledby="number-reference-title">
+                <div class="number-reference-heading">
+                    <h3 id="number-reference-title">号码生肖对照</h3>
+                    <span class="number-reference-year" x-text="'当前 · '+YEAR_ANIMAL+'年'"></span>
                 </div>
-                <div class="draw-number-row mb-2">
-                    <template x-for="n in draws[0].numbers" :key="'ln'+n">
-                        <div class="ball-square ball-square-lg" :class="'ball-'+getColor(n)">
-                            <span class="sq-num" x-text="pad(n)"></span>
-                            <span class="sq-zodiac" x-text="getZodiac(n)"></span>
-                        </div>
+                <ol class="number-reference-grid" aria-label="01至49号码与当前生肖对应表">
+                    <template x-for="n in 49" :key="'reference-'+n">
+                        <li class="number-reference-cell" :aria-label="pad(n)+'号，'+getZodiac(n)+'，'+getColorLabel(n)">
+                            <span class="number-reference-value">
+                                <i class="number-reference-dot" :class="'ball-'+getColor(n)" aria-hidden="true"></i>
+                                <span x-text="pad(n)"></span>
+                            </span>
+                            <span class="number-reference-zodiac" x-text="getZodiac(n)"></span>
+                        </li>
                     </template>
-                    <span class="draw-plus">+</span>
-                    <div class="ball-square ball-square-lg ball-special" :class="'ball-'+getColor(draws[0].special)">
-                        <span class="sq-num" x-text="pad(draws[0].special)"></span>
-                        <span class="sq-zodiac" x-text="getZodiac(draws[0].special)"></span>
-                    </div>
-                </div>
-                <div class="flex flex-wrap gap-2 sm:gap-5 text-xs sm:text-sm opacity-90">
-                    <span>波色: <strong x-text="getColorLabel(draws[0].special)"></strong></span>
-                    <span>生肖: <strong x-text="draws[0].zodiac || getZodiac(draws[0].special)"></strong></span>
-                    <span>五行: <strong x-text="getElement(draws[0].special)"></strong></span>
-                    <span>头尾: <strong x-text="getHead(draws[0].special)+'头'+getTail(draws[0].special)+'尾'"></strong></span>
-                </div>
-            </div>
-            </template>
+                </ol>
+            </section>
 
             <!-- Search -->
             <div class="draw-year-tabs" role="tablist" aria-label="开奖年份">
