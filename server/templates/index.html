@@ -41,7 +41,11 @@
         .number-reference-heading h3{font-size:16px;font-weight:700;color:#1e293b}
         .number-reference-year{font-size:12px;color:#1d4ed8;background:#eff6ff;border-radius:6px;padding:4px 8px;white-space:nowrap}
         .number-reference-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;list-style:none}
-        .number-reference-cell{display:flex;align-items:center;justify-content:center;gap:10px;min-width:0;padding:5px 4px;border:1px solid #edf0f3;border-radius:6px;background:#f8fafc}
+        .number-reference-cell{display:flex;align-items:center;justify-content:center;gap:10px;min-width:0;width:100%;padding:5px 4px;border:1px solid #edf0f3;border-radius:6px;background:#f8fafc;cursor:pointer}
+        @media(hover:hover){.number-reference-cell:hover{border-color:#93c5fd;background:#eff6ff}}
+        .number-reference-cell:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
+        .number-reference-cell.is-highlighted{border-color:#2563eb;background:#dbeafe;box-shadow:inset 0 0 0 1px #2563eb}
+        .number-reference-cell.is-highlighted .number-reference-value,.number-reference-cell.is-highlighted .number-reference-zodiac{color:#1e40af}
         .number-reference-value{display:flex;align-items:center;gap:5px;font-size:19px;font-weight:750;font-variant-numeric:tabular-nums;color:#1e293b;line-height:1.25}
         .number-reference-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
         .number-reference-zodiac{font-size:14px;font-weight:600;line-height:1.3;color:#475569}
@@ -306,12 +310,18 @@
                 </div>
                 <ol class="number-reference-grid" aria-label="01至49号码与当前生肖对应表">
                     <template x-for="n in 49" :key="'reference-'+n">
-                        <li class="number-reference-cell" :aria-label="pad(n)+'号，'+getZodiac(n)+'，'+getColorLabel(n)">
+                        <li>
+                        <button type="button" class="number-reference-cell"
+                            :class="{'is-highlighted':referenceZodiac===getZodiac(n)}"
+                            :aria-pressed="referenceZodiac===getZodiac(n)"
+                            :aria-label="pad(n)+'号，'+getZodiac(n)+'，'+getColorLabel(n)+'，点击高亮同生肖号码'"
+                            @click="referenceZodiac=referenceZodiac===getZodiac(n)?'':getZodiac(n)">
                             <span class="number-reference-value">
                                 <i class="number-reference-dot" :class="'ball-'+getColor(n)" aria-hidden="true"></i>
                                 <span x-text="pad(n)"></span>
                             </span>
                             <span class="number-reference-zodiac" x-text="getZodiac(n)"></span>
+                        </button>
                         </li>
                     </template>
                 </ol>
@@ -1226,7 +1236,7 @@ function app() {
         draws:[], loading:true, dataSource:'',
         cy, selectedYear:cy, drawYears:Array.from({length:Math.max(1,cy-2020+1)},(_,i)=>cy-i),
         yearDrawsCache:{}, yearSources:{}, yearLoading:false, yearError:'', yearRequestId:0,
-        searchTerm:'', zodiacFilters:[], zodiacCountFilter:null,
+        searchTerm:'', zodiacFilters:[], zodiacCountFilter:null, referenceZodiac:'',
         analysisSelectedPeriods:[], analysisDetailsOpen:false, analysisScope:'year', analysisMatchMode:'sequence', tripleRunOpen:false,
         analysisAllLoading:false, analysisAllError:'', analysisHistoryVersion:0,
         analysisTab:'overview',
