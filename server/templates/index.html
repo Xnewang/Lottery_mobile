@@ -1158,6 +1158,15 @@ function getHead(n) { return Math.floor(n/10); }
 function getTail(n) { return n%10; }
 function pad(n) { return String(n).padStart(2,'0'); }
 function colorHex(n) { const c=getColor(n); return c==='red'?'#ef4444':c==='blue'?'#3b82f6':c==='green'?'#22c55e':'#9ca3af'; }
+function deduplicateDraws(draws) {
+    const seen=new Set();
+    return (Array.isArray(draws)?draws:[]).filter(draw=>{
+        const period=String(draw?.period||'').trim();
+        if(!period||seen.has(period))return false;
+        seen.add(period);
+        return true;
+    });
+}
 
 function renderMd(text) {
     if(!text)return '';
@@ -1336,8 +1345,8 @@ function app() {
             this.loading=true;
             try {
                 const r=await fetch('/api/draws?count=500'); const d=await r.json();
-                if(d.success){this.draws=d.data;this.dataSource=d.source;
-                    this.yearDrawsCache[cy]=d.data.filter(row=>String(row.date).startsWith(cy+'-'));
+                if(d.success){const rows=deduplicateDraws(d.data);this.draws=rows;this.dataSource=d.source;
+                    this.yearDrawsCache[cy]=rows.filter(row=>String(row.date).startsWith(cy+'-'));
                     this.yearSources[cy]=d.source;this.updateAnalysis();}
                 else{this.dataSource='加载失败';}
             } catch(e){this.dataSource='连接失败';}
@@ -1361,7 +1370,7 @@ function app() {
             try {
                 const r=await fetch('/api/draws?year='+year), result=await r.json();
                 if(!r.ok||!result.success)throw new Error(result.error||'加载失败，请重试');
-                this.yearDrawsCache[year]=result.data.filter(d=>String(d.date).startsWith(year+'-'));
+                this.yearDrawsCache[year]=deduplicateDraws(result.data).filter(d=>String(d.date).startsWith(year+'-'));
                 this.yearSources[year]=result.source||'';
             } catch(e) {
                 if(requestId===this.yearRequestId)this.yearError=year+'年数据加载失败，请重试';
@@ -1582,7 +1591,7 @@ function app() {
                 try {
                     const r=await fetch('/api/draws?year='+year),result=await r.json();
                     if(!r.ok||!result.success)throw new Error(result.error||'加载失败');
-                    this.yearDrawsCache[year]=result.data.filter(d=>String(d.date).startsWith(year+'-'));
+                    this.yearDrawsCache[year]=deduplicateDraws(result.data).filter(d=>String(d.date).startsWith(year+'-'));
                     this.yearSources[year]=result.source||'';
                 } catch(e) { failures.push(year); }
             }));
