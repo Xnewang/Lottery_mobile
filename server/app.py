@@ -4,6 +4,7 @@
 import os
 import json
 import logging
+import re
 import requests
 from datetime import datetime
 from flask import Flask, request, jsonify, render_template
@@ -11,7 +12,8 @@ from flask_cors import CORS
 from config import (
     SILICONFLOW_API_KEY, SILICONFLOW_API_URL,
     AI_MODELS, AI_WIRE_API, AI_REASONING_EFFORT,
-    AI_DISABLE_RESPONSE_STORAGE, CACHE_DURATION, SERVER_PORT
+    AI_DISABLE_RESPONSE_STORAGE, CACHE_DURATION, SERVER_PORT,
+    MARKSIX6_API_URL
 )
 from scraper import LotteryScraper, get_zodiac, get_element, get_color, get_year_animal
 
@@ -112,6 +114,16 @@ _draws_cache = []
 _cache_source = ''
 _cache_time = None
 _preloaded = False
+_marksix6_cache = None
+_marksix6_cache_time = None
+
+MARKSIX6_DRAW_TYPES = {
+    'newMacau': '新澳门',
+    'oldMacau': '老澳门',
+}
+MARKSIX6_HISTORY_PATTERN = re.compile(
+    r'^\s*(\d+)\s*期\s*[：:]\s*([0-9]{1,2}(?:\s*,\s*[0-9]{1,2}){6})\s*$'
+)
 
 
 def enrich_draw(draw):
@@ -129,6 +141,74 @@ def enrich_draw(draw):
     if 'tail' not in draw:
         draw['tail'] = sp % 10
     return draw
+
+
+def period_to_date(period):
+    """将新/老澳门的 YYYYDDD 期号转换为公历日期。"""
+    value = str(period or '').strip()
+    if len(value) != 7 or not value.isdigit():
+        return ''
+    try:
+        return datetime.strptime(value, '%Y%j').strftime('%Y-%m-%d')
+    except ValueError:
+        return ''
+
+
+def parse_marksix6_history(history):
+    """把 marksix6 的文本历史记录转换为站内统一 draw 结构。"""
+    draws = []
+    seen_periods = set()
+    for raw in history if isinstance(history, list) else []:
+        match = MARKSIX6_HISTORY_PATTERN.match(str(raw))
+        if not match:
+            continue
+        period = match.group(1)
+        if period in seen_periods:
+            continue
+        values = [int(value.strip()) for value in match.group(2).split(',')]
+        if any(value < 1 or value > 49 for value in values) or len(set(values)) != 7:
+            continue
+        draw_date = period_to_date(period)
+        draw = {
+            'period': period,
+            'date': draw_date,
+            'numbers': values[:6],
+            'special': values[6],
+            'normal_zodiacs': [get_zodiac(value, draw_date) for value in values[:6]],
+        }
+        enrich_draw(draw)
+        draws.append(draw)
+        seen_periods.add(period)
+    return sorted(draws, key=lambda draw: int(draw['period']), reverse=True)
+
+
+def fetch_marksix6_payload(force=False):
+    """服务端获取并短时缓存第三方开奖集合，避免浏览器跨域直连。"""
+    global _marksix6_cache, _marksix6_cache_time
+    now = datetime.now()
+    cache_valid = (
+        _marksix6_cache is not None
+        and _marksix6_cache_time is not None
+        and (now - _marksix6_cache_time).total_seconds() < CACHE_DURATION
+    )
+    if cache_valid and not force:
+        return _marksix6_cache
+
+    response = requests.get(
+        MARKSIX6_API_URL,
+        headers={
+            'Accept': 'application/json,text/plain,*/*',
+            'User-Agent': 'Mozilla/5.0 LotteryMobile/1.0',
+        },
+        timeout=20,
+    )
+    response.raise_for_status()
+    payload = response.json()
+    if not isinstance(payload, dict) or not isinstance(payload.get('lottery_data'), list):
+        raise ValueError('开奖记录接口返回结构不正确')
+    _marksix6_cache = payload
+    _marksix6_cache_time = now
+    return payload
 
 
 def preload_data():
@@ -208,6 +288,53 @@ def health():
         'year_animal': get_year_animal(),
         'time': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     })
+
+
+@app.route('/api/macau-draws')
+def get_macau_draws():
+    draw_type = request.args.get('type', 'newMacau')
+    if draw_type not in MARKSIX6_DRAW_TYPES:
+        return jsonify({
+            'success': False,
+            'error': 'type 仅支持 newMacau 或 oldMacau'
+        }), 400
+
+    year = request.args.get('year', type=int)
+    current_year = datetime.now().year
+    if year is not None and not 2020 <= year <= current_year:
+        return jsonify({'success': False, 'error': '请选择有效年份'}), 400
+
+    count = request.args.get('count', 1000, type=int)
+    count = max(1, min(count, 2000))
+    force = request.args.get('force', '').lower() in ('1', 'true', 'yes')
+
+    try:
+        payload = fetch_marksix6_payload(force=force)
+        lottery = next(
+            (item for item in payload['lottery_data'] if item.get('code') == draw_type),
+            None,
+        )
+        if not lottery:
+            raise ValueError('接口中未找到%s数据' % MARKSIX6_DRAW_TYPES[draw_type])
+        draws = parse_marksix6_history(lottery.get('history', []))
+        if year is not None:
+            draws = [draw for draw in draws if draw['date'].startswith(str(year) + '-')]
+        draws = draws[:count]
+        return jsonify({
+            'success': True,
+            'data': draws,
+            'source': 'marksix6.net · %s' % MARKSIX6_DRAW_TYPES[draw_type],
+            'type': draw_type,
+            'year': year,
+            'count': len(draws),
+            'source_time': payload.get('server_time', ''),
+        })
+    except (requests.RequestException, ValueError, TypeError) as exc:
+        logger.warning('%s开奖记录加载失败: %s', MARKSIX6_DRAW_TYPES[draw_type], exc)
+        return jsonify({
+            'success': False,
+            'error': '%s开奖记录加载失败，请稍后重试' % MARKSIX6_DRAW_TYPES[draw_type]
+        }), 502
 
 
 @app.route('/api/draws')

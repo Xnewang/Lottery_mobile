@@ -34,6 +34,9 @@ AI_MODELS = [
 # ============================================================
 HISTORY_API_BASE = 'https://history.macaumarksix.com/history/macaujc2/expect/'
 MACAUJC_API_URL = 'https://history.macaumarksix.com/history/macaujc2/y/{year}'
+MARKSIX6_API_URL = os.environ.get(
+    'MARKSIX6_API_URL', 'http://marksix6.net/index.php?api=1'
+).strip()
 
 # ============================================================
 # 农历新年日期（用于动态计算生肖）

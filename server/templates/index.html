@@ -36,6 +36,15 @@
 
         /* 生肖筛选高亮 */
         .draw-hall{font-family:"Microsoft YaHei","PingFang SC",sans-serif;max-width:1000px;margin-inline:auto}
+        .draw-source-switcher{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 14px;margin-bottom:12px;border:1px solid #dbe4ee;border-radius:12px;background:linear-gradient(135deg,#fff 0%,#f8fbff 100%);box-shadow:0 4px 16px rgba(15,23,42,.04)}
+        .draw-source-copy strong{display:block;font-size:14px;color:#1e293b}
+        .draw-source-copy span{display:block;margin-top:3px;font-size:11px;color:#64748b}
+        .draw-source-tabs{display:grid;grid-template-columns:repeat(2,minmax(108px,1fr));gap:4px;padding:4px;border:1px solid #dbe4ee;border-radius:10px;background:#eef3f8}
+        .draw-source-tab{display:flex;align-items:center;justify-content:center;gap:7px;min-height:38px;padding:8px 15px;border-radius:7px;color:#526174;font-size:13px;font-weight:700;transition:background-color .16s ease,color .16s ease,box-shadow .16s ease}
+        .draw-source-tab::before{content:"";width:7px;height:7px;border-radius:50%;background:#94a3b8;box-shadow:0 0 0 3px rgba(148,163,184,.14)}
+        .draw-source-tab[aria-selected="true"]{background:#fff;color:#1d4ed8;box-shadow:0 2px 7px rgba(30,64,175,.13)}
+        .draw-source-tab[aria-selected="true"]::before{background:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.13)}
+        .draw-source-tab:focus-visible{outline:2px solid #2563eb;outline-offset:2px}
         .number-reference{background:#fff;border:1px solid #e1e7eb;border-radius:12px;padding:14px 16px;margin-bottom:12px}
         .number-reference-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
         .number-reference-heading h3{font-size:16px;font-weight:700;color:#1e293b}
@@ -50,6 +59,10 @@
         .number-reference-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
         .number-reference-zodiac{font-size:14px;font-weight:600;line-height:1.3;color:#475569}
         @media(max-width:639px){
+            .draw-source-switcher{display:block;padding:12px}
+            .draw-source-copy{margin-bottom:10px}
+            .draw-source-tabs{width:100%}
+            .draw-source-tab{min-width:0;padding-inline:8px}
             .number-reference{padding:12px}
             .number-reference-heading h3{font-size:14px}
             .number-reference-grid{gap:4px}
@@ -302,6 +315,25 @@
 
         <!-- ============ 开奖大厅 ============ -->
         <div x-show="activeTab==='draws'&&!loading" x-cloak class="fade-in draw-hall">
+            <section class="draw-source-switcher" aria-labelledby="draw-source-title">
+                <div class="draw-source-copy">
+                    <strong id="draw-source-title">开奖记录</strong>
+                    <span x-text="yearLoading?'正在切换数据源…':dataSource"></span>
+                </div>
+                <div class="draw-source-tabs" role="tablist" aria-label="澳门开奖类型">
+                    <template x-for="source in drawSourceTabs" :key="source.id">
+                        <button type="button" class="draw-source-tab" role="tab"
+                            :id="'draw-source-tab-'+source.id"
+                            :aria-selected="drawSource===source.id"
+                            aria-controls="year-draw-records"
+                            :tabindex="drawSource===source.id?0:-1"
+                            @click="selectDrawSource(source.id)"
+                            @keydown.right.prevent="moveDrawSource(source.id,1)"
+                            @keydown.left.prevent="moveDrawSource(source.id,-1)"
+                            x-text="source.name"></button>
+                    </template>
+                </div>
+            </section>
             <!-- Current lunar-year number reference; historical draws retain their own zodiac data. -->
             <section class="number-reference" aria-labelledby="number-reference-title">
                 <div class="number-reference-heading">
@@ -494,11 +526,11 @@
                 <p class="history-match-summary" x-show="getSelectedAnalysisDraws().length===1" style="padding:0 18px 16px">再手动选择至少1期后，才显示历史对比。</p>
             </section>
 
-            <div id="year-draw-records" class="draw-records" role="tabpanel" :aria-labelledby="'year-tab-'+selectedYear" :aria-busy="yearLoading">
+            <div id="year-draw-records" class="draw-records" role="tabpanel" :aria-labelledby="'draw-source-tab-'+drawSource+' year-tab-'+selectedYear" :aria-busy="yearLoading">
                 <div class="draw-empty" x-show="yearLoading" role="status">正在加载该年开奖记录…</div>
                 <div class="draw-empty" x-show="yearError" role="alert">
                     <span x-text="yearError"></span>
-                    <button class="zodiac-reset" @click="selectDrawYear(selectedYear)">重试</button>
+                    <button class="zodiac-reset" @click="retryDrawRecords()">重试</button>
                 </div>
                     <template x-for="(d, drawIndex) in getFilteredDraws()" :key="'record-'+d.period+'-'+drawIndex">
                     <article class="draw-record" :id="'draw-record-'+d.period" :class="{'record-muted':isDrawMuted(d),'analysis-selected':isAnalysisDrawSelected(d)}">
@@ -1234,6 +1266,9 @@ function app() {
         ],
         YEAR_ANIMAL,
         draws:[], loading:true, dataSource:'',
+        drawSource:'newMacau',
+        drawSourceTabs:[{id:'newMacau',name:'新澳门'},{id:'oldMacau',name:'老澳门'}],
+        drawSourceRows:{}, drawSourceLabels:{},
         cy, selectedYear:cy, drawYears:Array.from({length:Math.max(1,cy-2020+1)},(_,i)=>cy-i),
         yearDrawsCache:{}, yearSources:{}, yearLoading:false, yearError:'', yearRequestId:0,
         searchTerm:'', zodiacFilters:[], zodiacCountFilter:null, referenceZodiac:'',
@@ -1355,13 +1390,52 @@ function app() {
         async fetchDraws() {
             this.loading=true;
             try {
-                const r=await fetch('/api/draws?count=500'); const d=await r.json();
-                if(d.success){const rows=deduplicateDraws(d.data);this.draws=rows;this.dataSource=d.source;
-                    this.yearDrawsCache[cy]=rows.filter(row=>String(row.date).startsWith(cy+'-'));
-                    this.yearSources[cy]=d.source;this.updateAnalysis();}
-                else{this.dataSource='加载失败';}
-            } catch(e){this.dataSource='连接失败';}
+                await this.loadDrawSource(this.drawSource);
+            } catch(e){this.dataSource=e.message||'开奖记录连接失败';this.yearError=this.dataSource;}
             finally{this.loading=false;}
+        },
+
+        yearCacheKey(year,source=this.drawSource) { return source+':'+year; },
+        cacheDrawSource(source,rows,label) {
+            this.drawSourceRows[source]=rows;this.drawSourceLabels[source]=label;
+            this.drawYears.forEach(year=>{
+                const key=this.yearCacheKey(year,source);
+                this.yearDrawsCache[key]=rows.filter(row=>String(row.date).startsWith(year+'-'));
+                this.yearSources[key]=label;
+            });
+        },
+        async loadDrawSource(source) {
+            const cached=this.drawSourceRows[source];
+            if(cached){this.draws=cached;this.dataSource=this.drawSourceLabels[source]||'';this.updateAnalysis();return;}
+            const r=await fetch('/api/macau-draws?type='+encodeURIComponent(source)+'&count=1000');
+            const result=await r.json();
+            if(!r.ok||!result.success)throw new Error(result.error||'开奖记录加载失败，请重试');
+            const rows=deduplicateDraws(result.data);
+            this.cacheDrawSource(source,rows,result.source||'');
+            this.draws=rows;this.dataSource=result.source||'';this.updateAnalysis();
+        },
+        async selectDrawSource(source,focus=false) {
+            if(!this.drawSourceTabs.some(item=>item.id===source))return;
+            if(source===this.drawSource&&!this.yearError){
+                if(focus)this.$nextTick(()=>document.getElementById('draw-source-tab-'+source)?.focus());
+                return;
+            }
+            this.drawSource=source;this.selectedYear=cy;this.searchTerm='';this.zodiacFilters=[];
+            this.zodiacCountFilter=null;this.referenceZodiac='';this.yearError='';this.clearAnalysisSelection();
+            if(focus)this.$nextTick(()=>document.getElementById('draw-source-tab-'+source)?.focus());
+            const requestId=++this.yearRequestId;this.yearLoading=true;
+            try { await this.loadDrawSource(source); }
+            catch(e){if(requestId===this.yearRequestId){this.draws=[];this.dataSource=e.message||'开奖记录加载失败';this.yearError=this.dataSource;this.updateAnalysis();}}
+            finally{if(requestId===this.yearRequestId)this.yearLoading=false;}
+        },
+        moveDrawSource(source,step) {
+            const index=this.drawSourceTabs.findIndex(item=>item.id===source);
+            const next=(index+step+this.drawSourceTabs.length)%this.drawSourceTabs.length;
+            this.selectDrawSource(this.drawSourceTabs[next].id,true);
+        },
+        retryDrawRecords() {
+            if(this.drawSourceRows[this.drawSource])this.selectDrawYear(this.selectedYear);
+            else this.selectDrawSource(this.drawSource);
         },
 
         async fetchModels() {
@@ -1376,13 +1450,14 @@ function app() {
             this.selectedYear=year;this.searchTerm='';this.yearError='';this.clearAnalysisSelection();
             if(focus)this.$nextTick(()=>document.getElementById('year-tab-'+year)?.focus());
             const requestId=++this.yearRequestId;
-            if(Object.prototype.hasOwnProperty.call(this.yearDrawsCache,year)){this.yearLoading=false;return;}
+            const key=this.yearCacheKey(year);
+            if(Object.prototype.hasOwnProperty.call(this.yearDrawsCache,key)){this.yearLoading=false;return;}
             this.yearLoading=true;
             try {
-                const r=await fetch('/api/draws?year='+year), result=await r.json();
+                const r=await fetch('/api/macau-draws?type='+encodeURIComponent(this.drawSource)+'&year='+year), result=await r.json();
                 if(!r.ok||!result.success)throw new Error(result.error||'加载失败，请重试');
-                this.yearDrawsCache[year]=deduplicateDraws(result.data).filter(d=>String(d.date).startsWith(year+'-'));
-                this.yearSources[year]=result.source||'';
+                this.yearDrawsCache[key]=deduplicateDraws(result.data).filter(d=>String(d.date).startsWith(year+'-'));
+                this.yearSources[key]=result.source||'';
             } catch(e) {
                 if(requestId===this.yearRequestId)this.yearError=year+'年数据加载失败，请重试';
             } finally {
@@ -1393,7 +1468,7 @@ function app() {
             const index=(this.drawYears.indexOf(year)+step+this.drawYears.length)%this.drawYears.length;
             this.selectDrawYear(this.drawYears[index],true);
         },
-        getYearDraws() { return this.yearDrawsCache[this.selectedYear]||[]; },
+        getYearDraws() { return this.yearDrawsCache[this.yearCacheKey(this.selectedYear)]||[]; },
         getRecordZodiac(n,d) {
             if(n===d.special&&d.zodiac)return d.zodiac;
             const index=d.numbers.indexOf(n);
@@ -1521,7 +1596,7 @@ function app() {
             if(!this.isCombinationRunSelection())return [];
             const width=this.zodiacFilters.length;
             const groups=this.getAnalysisYearGroups();
-            const cacheKey=[width,this.analysisScope,this.selectedYear,this.analysisHistoryVersion,
+            const cacheKey=[this.drawSource,width,this.analysisScope,this.selectedYear,this.analysisHistoryVersion,
                 ...groups.map(group=>group.year+':'+group.rows.length+':'+(group.rows[0]?.period||'')+':'+(group.rows[group.rows.length-1]?.period||''))].join('|');
             const selectedKey=this.getTripleKey(this.zodiacFilters);
             if(TRIPLE_RUN_CACHE.key!==cacheKey){
@@ -1594,16 +1669,17 @@ function app() {
         },
         async loadAllAnalysisYears() {
             if(this.analysisAllLoading)return;
-            const missing=this.drawYears.filter(year=>!Object.prototype.hasOwnProperty.call(this.yearDrawsCache,year));
+            const missing=this.drawYears.filter(year=>!Object.prototype.hasOwnProperty.call(this.yearDrawsCache,this.yearCacheKey(year)));
             if(!missing.length)return;
             this.analysisAllLoading=true;this.analysisAllError='';
             const failures=[];
             await Promise.all(missing.map(async year=>{
                 try {
-                    const r=await fetch('/api/draws?year='+year),result=await r.json();
+                    const r=await fetch('/api/macau-draws?type='+encodeURIComponent(this.drawSource)+'&year='+year),result=await r.json();
                     if(!r.ok||!result.success)throw new Error(result.error||'加载失败');
-                    this.yearDrawsCache[year]=deduplicateDraws(result.data).filter(d=>String(d.date).startsWith(year+'-'));
-                    this.yearSources[year]=result.source||'';
+                    const key=this.yearCacheKey(year);
+                    this.yearDrawsCache[key]=deduplicateDraws(result.data).filter(d=>String(d.date).startsWith(year+'-'));
+                    this.yearSources[key]=result.source||'';
                 } catch(e) { failures.push(year); }
             }));
             this.analysisAllError=failures.length?'以下年份加载失败：'+failures.join('、'):'';
@@ -1613,7 +1689,7 @@ function app() {
         getAnalysisYearGroups() {
             void this.analysisHistoryVersion;
             if(this.analysisScope==='year')return [{year:this.selectedYear,rows:this.getYearDraws()}];
-            return this.drawYears.map(year=>({year,rows:this.yearDrawsCache[year]||[]})).filter(group=>group.rows.length);
+            return this.drawYears.map(year=>({year,rows:this.yearDrawsCache[this.yearCacheKey(year)]||[]})).filter(group=>group.rows.length);
         },
         getHistoryWindows() {
             const windows=[];
@@ -1709,7 +1785,7 @@ function app() {
         getZodiacCountSummary() {
             if(this.yearLoading)return '正在加载 '+this.selectedYear+'年统计…';
             if(this.yearError)return '该年份数据暂不可用';
-            if((this.yearSources[this.selectedYear]||'').includes('模拟'))return '当前为模拟数据，不代表真实开奖历史。';
+            if((this.yearSources[this.yearCacheKey(this.selectedYear)]||'').includes('模拟'))return '当前为模拟数据，不代表真实开奖历史。';
             const s=this.getZodiacCountStats();
             if(!s.total)return '暂无有效开奖记录可统计';
             return this.selectedYear+'年共 '+s.total+'期（'+s.first+'—'+s.last+'），最少 '+s.minimum+'肖，共 '+s.counts[s.minimum]+'期。';
