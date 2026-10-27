@@ -381,7 +381,7 @@
                 <section class="zodiac-panel" aria-label="生肖高亮">
                     <div class="zodiac-panel-heading">
                         <div><strong>生肖标记</strong></div>
-                        <button class="zodiac-reset" @click="zodiacFilters=[]" :disabled="!zodiacFilters.length">还原</button>
+                        <button class="zodiac-reset" @click="zodiacFilters=[];tripleRunMode='selected';tripleRunOpen=false" :disabled="!zodiacFilters.length">还原</button>
                     </div>
                     <div class="zodiac-options" role="group" aria-label="选择生肖">
                         <template x-for="z in zodiacList" :key="'zf'+z">
@@ -428,15 +428,19 @@
                         <p x-text="getSelectedTripleRunSummary()"></p>
                     </div>
                     <button class="sequence-option" @click="tripleRunOpen=!tripleRunOpen" :aria-pressed="tripleRunOpen"
-                        x-text="tripleRunOpen?'收起同类组合':'查看同类组合'"></button>
+                        x-text="tripleRunOpen?'收起连开记录':'查看连开记录'"></button>
                 </section>
             </div>
 
             <section class="triple-run-results" x-show="tripleRunOpen&&isCombinationRunSelection()" x-cloak aria-label="连续三期同开生肖组合结果">
                 <div class="triple-run-head">
                     <div>
-                        <h3 x-text="'任意'+getRunSelectionLabel()+'连续3期同开'"></h3>
-                        <p x-text="'判定口径：同一组'+getRunSelectionLabel()+'必须在连续3期开奖的全部7个号码中，每一期全部出现。'"></p>
+                        <h3 x-text="tripleRunMode==='selected'?'所选'+getRunSelectionLabel()+'连续3期同开':'其他'+getRunSelectionLabel()+'连续3期同开'"></h3>
+                        <p x-text="tripleRunMode==='selected'?'判定口径：你选中的'+zodiacFilters.join('、')+'必须在连续至少3期的每一期7个号码中全部出现。':'此处单独查看其他同数量生肖组合，每组也必须连续至少3期全部出现。'"></p>
+                        <div class="sequence-control-group" style="margin-top:8px;flex-wrap:wrap" role="group" aria-label="连开组合匹配方式">
+                            <button class="sequence-option" @click="tripleRunMode='selected'" :aria-pressed="tripleRunMode==='selected'">只看我选的</button>
+                            <button class="sequence-option" @click="tripleRunMode='others'" :aria-pressed="tripleRunMode==='others'" x-text="'其他'+getRunSelectionLabel()+'组合'"></button>
+                        </div>
                     </div>
                     <button class="analysis-clear" @click="tripleRunOpen=false">关闭</button>
                 </div>
@@ -445,8 +449,8 @@
                     <span x-text="' · '+getSelectedTripleRunDetail()"></span>
                 </div>
                 <p class="history-match-summary" style="padding:0 18px 10px" x-text="getTripleRunResultsSummary()"></p>
-                <div class="triple-run-grid" x-show="getTripleRunPatterns().length">
-                    <template x-for="item in getTripleRunPatterns()" :key="'triple-run-'+item.key">
+                <div class="triple-run-grid" x-show="getVisibleTripleRunPatterns().length">
+                    <template x-for="item in getVisibleTripleRunPatterns()" :key="'triple-run-'+item.key">
                         <article class="triple-run-card" :class="{'selected':item.isSelected}">
                             <div class="triple-run-card-head">
                                 <strong x-text="item.zodiacs.join('、')+(item.isSelected?' · 你选的':'')"></strong>
@@ -456,7 +460,7 @@
                         </article>
                     </template>
                 </div>
-                <p class="triple-run-empty" x-show="!analysisAllLoading&&!getTripleRunPatterns().length" x-text="'当前范围没有找到连续3期每期同时出现的'+getRunSelectionLabel()+'组合。'"></p>
+                <p class="triple-run-empty" x-show="!analysisAllLoading&&!getVisibleTripleRunPatterns().length" x-text="tripleRunMode==='selected'?'当前范围没有找到'+zodiacFilters.join('、')+'连续至少3期每期全部出现的记录。':'当前范围没有找到其他连续至少3期每期全部出现的'+getRunSelectionLabel()+'组合。'"></p>
                 <p class="analysis-disclaimer" style="padding:0 18px 14px">这里只整理历史共现结构，不代表下一期会继续出现。</p>
             </section>
 
@@ -1272,7 +1276,7 @@ function app() {
         cy, selectedYear:cy, drawYears:Array.from({length:Math.max(1,cy-2020+1)},(_,i)=>cy-i),
         yearDrawsCache:{}, yearSources:{}, yearLoading:false, yearError:'', yearRequestId:0,
         searchTerm:'', zodiacFilters:[], zodiacCountFilter:null, referenceZodiac:'',
-        analysisSelectedPeriods:[], analysisDetailsOpen:false, analysisScope:'year', analysisMatchMode:'sequence', tripleRunOpen:false,
+        analysisSelectedPeriods:[], analysisDetailsOpen:false, analysisScope:'year', analysisMatchMode:'sequence', tripleRunOpen:false, tripleRunMode:'selected',
         analysisAllLoading:false, analysisAllError:'', analysisHistoryVersion:0,
         analysisTab:'overview',
         analysisTabs:[{id:'overview',name:'总览'},{id:'frequency',name:'频率'},{id:'attributes',name:'属性'}],
@@ -1629,6 +1633,9 @@ function app() {
             }
             return TRIPLE_RUN_CACHE.view;
         },
+        getVisibleTripleRunPatterns() {
+            return this.getTripleRunPatterns().filter(item=>this.tripleRunMode==='others'?!item.isSelected:item.isSelected);
+        },
         getSelectedTripleRuns() {
             if(!this.isCombinationRunSelection())return [];
             const selectedKey=this.getTripleKey(this.zodiacFilters);
@@ -1649,14 +1656,14 @@ function app() {
         },
         getSelectedTripleRunSummary() {
             if(!this.isCombinationRunSelection())return '';
-            const total=this.getTripleRunPatterns().length;
-            return this.getSelectedTripleRunDetail()+' · 任意'+this.getRunSelectionLabel()+'共'+total+'组符合';
+            return this.getSelectedTripleRunDetail();
         },
         getTripleRunResultsSummary() {
             if(this.analysisAllLoading)return '正在加载全部年份历史数据…';
             if(this.analysisAllError)return this.analysisAllError;
             const scope=this.analysisScope==='all'?'全部已加载年份':this.selectedYear+'年';
-            return scope+'共有 '+this.getTripleRunPatterns().length+' 组任意'+this.getRunSelectionLabel()+'，曾连续至少3期在每一期同时出现。';
+            if(this.tripleRunMode!=='others')return scope+'仅统计你选中的完整组合：'+this.zodiacFilters.join('、')+'。';
+            return scope+'共有 '+this.getVisibleTripleRunPatterns().length+' 组其他'+this.getRunSelectionLabel()+'，曾连续至少3期在每一期同时出现。';
         },
         formatTripleRunRanges(item) {
             const shown=item.runs.slice(0,4).map(run=>run.start+'—'+run.end+'（'+run.length+'期）');
@@ -1800,6 +1807,7 @@ function app() {
         toggleZodiacFilter(z) {
             const idx=this.zodiacFilters.indexOf(z);
             if(idx>-1)this.zodiacFilters.splice(idx,1); else this.zodiacFilters.push(z);
+            this.tripleRunMode='selected';
             if(!this.isCombinationRunSelection())this.tripleRunOpen=false;
         },
         zodiacClass(n,d=null) {
