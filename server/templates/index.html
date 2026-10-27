@@ -157,10 +157,22 @@
         .triple-run-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:0 18px 16px}
         .triple-run-card{border:1px solid #e2e8f0;border-radius:10px;background:#fff;padding:10px 12px;min-width:0}
         .triple-run-card.selected{border-color:#2563eb;background:#eff6ff}
+        .triple-run-card.expanded{grid-column:1/-1;border-color:#818cf8}
         .triple-run-card-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
         .triple-run-card-head strong{font-size:13px;color:#1e293b}
         .triple-run-card-head span{font-size:10px;color:#64748b;white-space:nowrap}
         .triple-run-ranges{font-size:11px;color:#64748b;margin-top:6px;line-height:1.6;word-break:break-word}
+        .run-verification{margin-top:12px;border-top:1px solid #e0e7ff;padding-top:10px}
+        .run-verification-note{font-size:12px;color:#3730a3;margin-bottom:10px}
+        .run-verification-range{font-size:12px;font-weight:700;color:#334155;padding:8px 0}
+        .run-verification-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 0;border-top:1px solid #edf0f3}
+        .run-verification-period{min-width:105px;font-size:12px;font-weight:700;color:#334155}
+        .run-verification-balls{display:flex;gap:6px;flex-wrap:wrap}
+        .run-verification-hit{outline:2px solid #2563eb;outline-offset:2px}
+        .run-verification-miss{background:#f1f5f9!important;color:#64748b!important;box-shadow:none!important}
+        .run-verification-hits{display:flex;gap:5px;flex-wrap:wrap;font-size:11px}
+        .run-verification-hits span{padding:4px 7px;border-radius:5px;background:#dcfce7;color:#166534}
+        .run-verification-hits span.missing{background:#fef2f2;color:#b91c1c}
         .triple-run-empty{padding:0 18px 16px;color:#64748b;font-size:12px}
         .analysis-disclaimer{font-size:10px;color:#94a3b8;margin-top:10px}
         .record-heading strong{display:block;font-size:13px;color:#1e293b;font-variant-numeric:tabular-nums}
@@ -435,7 +447,7 @@
             <section class="triple-run-results" x-show="tripleRunOpen&&isCombinationRunSelection()" x-cloak aria-label="连续三期同开生肖组合结果">
                 <div class="triple-run-head">
                     <div>
-                        <h3 x-text="tripleRunMode==='selected'?'所选'+getRunSelectionLabel()+'连续3期同开':'其他'+getRunSelectionLabel()+'连续3期同开'"></h3>
+                        <h3 x-text="tripleRunMode==='selected'?'所选'+getRunSelectionLabel()+'连续至少3期同开':'其他'+getRunSelectionLabel()+'连续至少3期同开'"></h3>
                         <p x-text="tripleRunMode==='selected'?'判定口径：你选中的'+zodiacFilters.join('、')+'必须在连续至少3期的每一期7个号码中全部出现。':'此处单独查看其他同数量生肖组合，每组也必须连续至少3期全部出现。'"></p>
                         <div class="sequence-control-group" style="margin-top:8px;flex-wrap:wrap" role="group" aria-label="连开组合匹配方式">
                             <button class="sequence-option" @click="tripleRunMode='selected'" :aria-pressed="tripleRunMode==='selected'">只看我选的</button>
@@ -451,12 +463,42 @@
                 <p class="history-match-summary" style="padding:0 18px 10px" x-text="getTripleRunResultsSummary()"></p>
                 <div class="triple-run-grid" x-show="getVisibleTripleRunPatterns().length">
                     <template x-for="item in getVisibleTripleRunPatterns()" :key="'triple-run-'+item.key">
-                        <article class="triple-run-card" :class="{'selected':item.isSelected}">
+                        <article class="triple-run-card" :class="{'selected':item.isSelected,'expanded':tripleRunExpandedKey===item.key}">
                             <div class="triple-run-card-head">
                                 <strong x-text="item.zodiacs.join('、')+(item.isSelected?' · 你选的':'')"></strong>
                                 <span x-text="'最长'+item.longest+'期 · '+item.runs.length+'段'"></span>
                             </div>
                             <p class="triple-run-ranges" x-text="formatTripleRunRanges(item)"></p>
+                            <button class="sequence-option" style="margin-top:8px" @click="tripleRunExpandedKey=tripleRunExpandedKey===item.key?'':item.key"
+                                :aria-expanded="tripleRunExpandedKey===item.key" x-text="tripleRunExpandedKey===item.key?'收起对应开奖记录':'展开对应开奖记录'"></button>
+                            <template x-if="tripleRunExpandedKey===item.key">
+                                <div class="run-verification">
+                                    <p class="run-verification-note" x-text="'核对 '+item.zodiacs.join('、')+' · '+(drawSource==='oldMacau'?'老澳门':'新澳门')+' · 以下按本组生肖高亮，含特码'"></p>
+                                    <template x-for="run in getTripleRunVerification(item)" :key="'verify-run-'+run.start">
+                                        <div>
+                                            <p class="run-verification-range" x-text="run.start+'—'+run.end+' · 连续'+run.length+'期'+(run.complete?' · 每期全部出现':' · 数据不完整，请重新加载')"></p>
+                                            <template x-for="row in run.rows" :key="'verify-row-'+row.period">
+                                                <div class="run-verification-row">
+                                                    <strong class="run-verification-period" x-text="'第 '+row.period+' 期'"></strong>
+                                                    <div class="run-verification-balls">
+                                                        <template x-for="ball in row.balls" :key="'verify-ball-'+ball.number">
+                                                            <div class="ball-square ball-square-sm" :class="['ball-'+getColor(ball.number),ball.hit?'run-verification-hit':'run-verification-miss']">
+                                                                <span class="sq-num" x-text="(ball.special?'特 ':'')+pad(ball.number)"></span>
+                                                                <span class="sq-zodiac" x-text="ball.zodiac"></span>
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                    <div class="run-verification-hits">
+                                                        <template x-for="hit in row.hits" :key="'verify-hit-'+hit.zodiac">
+                                                            <span :class="{'missing':!hit.numbers.length}" x-text="hit.zodiac+'：'+(hit.numbers.length?hit.numbers.join('、'):'未开')"></span>
+                                                        </template>
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </div>
+                                    </template>
+                                </div>
+                            </template>
                         </article>
                     </template>
                 </div>
@@ -1276,7 +1318,7 @@ function app() {
         cy, selectedYear:cy, drawYears:Array.from({length:Math.max(1,cy-2020+1)},(_,i)=>cy-i),
         yearDrawsCache:{}, yearSources:{}, yearLoading:false, yearError:'', yearRequestId:0,
         searchTerm:'', zodiacFilters:[], zodiacCountFilter:null, referenceZodiac:'',
-        analysisSelectedPeriods:[], analysisDetailsOpen:false, analysisScope:'year', analysisMatchMode:'sequence', tripleRunOpen:false, tripleRunMode:'selected',
+        analysisSelectedPeriods:[], analysisDetailsOpen:false, analysisScope:'year', analysisMatchMode:'sequence', tripleRunOpen:false, tripleRunMode:'selected', tripleRunExpandedKey:'',
         analysisAllLoading:false, analysisAllError:'', analysisHistoryVersion:0,
         analysisTab:'overview',
         analysisTabs:[{id:'overview',name:'总览'},{id:'frequency',name:'频率'},{id:'attributes',name:'属性'}],
@@ -1425,6 +1467,7 @@ function app() {
                 return;
             }
             this.drawSource=source;this.selectedYear=cy;this.searchTerm='';this.zodiacFilters=[];
+            this.tripleRunExpandedKey='';
             this.zodiacCountFilter=null;this.referenceZodiac='';this.yearError='';this.clearAnalysisSelection();
             if(focus)this.$nextTick(()=>document.getElementById('draw-source-tab-'+source)?.focus());
             const requestId=++this.yearRequestId;this.yearLoading=true;
@@ -1452,6 +1495,7 @@ function app() {
 
         async selectDrawYear(year,focus=false) {
             this.selectedYear=year;this.searchTerm='';this.yearError='';this.clearAnalysisSelection();
+            this.tripleRunExpandedKey='';
             if(focus)this.$nextTick(()=>document.getElementById('year-tab-'+year)?.focus());
             const requestId=++this.yearRequestId;
             const key=this.yearCacheKey(year);
@@ -1636,6 +1680,25 @@ function app() {
         getVisibleTripleRunPatterns() {
             return this.getTripleRunPatterns().filter(item=>this.tripleRunMode==='others'?!item.isSelected:item.isSelected);
         },
+        getTripleRunVerification(item) {
+            const groups=this.getAnalysisYearGroups();
+            return item.runs.map(run=>{
+                const records=new Map((groups.find(group=>group.year===run.year)?.rows||[]).map(row=>[String(row.period),row]));
+                const rows=run.periods.map(period=>{
+                    const record=records.get(String(period));
+                    const valid=record&&this.getDrawZodiacSet(record).size>0;
+                    const balls=valid?[...record.numbers,record.special].map((number,index)=>{
+                        const zodiac=this.getRecordZodiac(number,record);
+                        return {number,zodiac,special:index===6,hit:item.zodiacs.includes(zodiac)};
+                    }):[];
+                    const hits=item.zodiacs.map(zodiac=>({
+                        zodiac,numbers:balls.filter(ball=>ball.zodiac===zodiac).map(ball=>(ball.special?'特':'')+pad(ball.number)),
+                    }));
+                    return {period,balls,hits,complete:!!valid&&hits.every(hit=>hit.numbers.length>0)};
+                });
+                return {...run,rows,complete:rows.length===run.length&&rows.every(row=>row.complete)};
+            });
+        },
         getSelectedTripleRuns() {
             if(!this.isCombinationRunSelection())return [];
             const selectedKey=this.getTripleKey(this.zodiacFilters);
@@ -1672,6 +1735,7 @@ function app() {
         },
         async setAnalysisScope(scope) {
             this.analysisScope=scope;
+            this.tripleRunExpandedKey='';
             if(scope==='all')await this.loadAllAnalysisYears();
         },
         async loadAllAnalysisYears() {
@@ -1808,6 +1872,7 @@ function app() {
             const idx=this.zodiacFilters.indexOf(z);
             if(idx>-1)this.zodiacFilters.splice(idx,1); else this.zodiacFilters.push(z);
             this.tripleRunMode='selected';
+            this.tripleRunExpandedKey='';
             if(!this.isCombinationRunSelection())this.tripleRunOpen=false;
         },
         zodiacClass(n,d=null) {

@@ -117,3 +117,46 @@ test('switching Macau data sources does not reuse the other source matching resu
     app.drawSource = 'newMacau';
     assert.deepEqual(keys(app), ['鼠|兔|猪']);
 });
+
+// New Macau records returned by the deployed API for the range in the user's screenshot.
+const screenshotRows = [
+    { period: '2026158', numbers: [43, 48, 3, 1, 12, 23], normal_zodiacs: ['鼠', '羊', '龙', '马', '羊', '猴'], special: 16, zodiac: '兔' },
+    { period: '2026157', numbers: [43, 25, 11, 31, 17, 10], normal_zodiacs: ['鼠', '马', '猴', '鼠', '虎', '鸡'], special: 40, zodiac: '兔' },
+    { period: '2026156', numbers: [31, 16, 11, 3, 37, 12], normal_zodiacs: ['鼠', '兔', '猴', '龙', '马', '羊'], special: 1, zodiac: '马' },
+    { period: '2026155', numbers: [21, 37, 46, 13, 40, 47], normal_zodiacs: ['狗', '马', '鸡', '马', '兔', '猴'], special: 7, zodiac: '鼠' },
+    { period: '2026154', numbers: [46, 28, 42, 31, 23, 34], normal_zodiacs: ['鸡', '兔', '牛', '鼠', '猴', '鸡'], special: 41, zodiac: '虎' },
+];
+
+test('screenshot combination has all three zodiacs in exactly the five advertised records', () => {
+    const app = component(screenshotRows, ['兔', '鼠', '猪']);
+    app.tripleRunMode = 'others';
+    const pattern = app.getVisibleTripleRunPatterns().find(item => item.key === '鼠|兔|猴');
+    assert.ok(pattern);
+    const proof = app.getTripleRunVerification(pattern);
+    assert.equal(proof[0].complete, true);
+    assert.equal(proof[0].length, 5);
+    assert.deepEqual(Array.from(proof[0].rows, row => row.period), screenshotRows.map(row => row.period));
+    const first = proof[0].rows[0];
+    assert.deepEqual(Array.from(first.hits, hit => `${hit.zodiac}:${hit.numbers.join(',')}`), ['鼠:43', '兔:特16', '猴:23']);
+    assert.equal(first.balls.find(ball => ball.number === 23).hit, true);
+    assert.deepEqual(app.zodiacFilters, ['兔', '鼠', '猪']);
+});
+
+test('other-combination search rejects a run with one zodiac missing from a middle draw', () => {
+    const rows = screenshotRows.map(row => ({ ...row, normal_zodiacs: [...row.normal_zodiacs] }));
+    rows[2].normal_zodiacs[2] = '猪'; // Replace the only monkey in the middle of the five-draw run.
+    const app = component(rows, ['兔', '鼠', '猪']);
+    app.tripleRunMode = 'others';
+    assert.ok(!keys(app).includes('鼠|兔|猴'));
+});
+
+test('verification marks absent zodiacs instead of claiming complete coverage', () => {
+    const app = component(screenshotRows, ['兔', '鼠', '猪']);
+    const proof = app.getTripleRunVerification({
+        zodiacs: ['鼠', '兔', '猪'],
+        runs: [{ year: 2026, start: '2026158', end: '2026154', length: 5, periods: screenshotRows.map(row => row.period) }],
+    });
+    assert.equal(proof[0].complete, false);
+    assert.equal(proof[0].rows[0].complete, false);
+    assert.equal(proof[0].rows[0].hits.find(hit => hit.zodiac === '猪').numbers.length, 0);
+});
