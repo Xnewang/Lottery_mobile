@@ -244,7 +244,15 @@
         .bounce-dot{animation:bounceDot 1.4s infinite ease-in-out both}
         .bounce-dot:nth-child(1){animation-delay:-.32s}.bounce-dot:nth-child(2){animation-delay:-.16s}
         @keyframes bounceDot{0%,80%,100%{transform:scale(0)}40%{transform:scale(1)}}
-        ::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+        ::-webkit-scrollbar{width:10px;height:10px}
+        ::-webkit-scrollbar-track{background:#edf2f7}
+        ::-webkit-scrollbar-thumb{background:#94a3b8;border:1px solid #edf2f7;border-radius:6px;min-height:36px}
+        ::-webkit-scrollbar-thumb:hover{background:#64748b}
+        ::-webkit-scrollbar-thumb:active{background:#475569}
+        @supports not selector(::-webkit-scrollbar){*{scrollbar-color:#94a3b8 #edf2f7;scrollbar-width:auto}}
+        .back-to-top{position:fixed;right:max(18px,env(safe-area-inset-right));bottom:calc(22px + env(safe-area-inset-bottom));z-index:45;display:flex;align-items:center;gap:6px;min-height:44px;padding:10px 14px;border:1px solid #1d4ed8;border-radius:999px;background:#2563eb;color:#fff;font-size:13px;font-weight:600;box-shadow:0 4px 14px #1e40af33;cursor:pointer}
+        .back-to-top:hover{background:#1d4ed8}
+        .back-to-top:focus-visible{outline:3px solid #93c5fd;outline-offset:3px}
 
         /* Mobile-specific */
         @media(max-width:640px){
@@ -1216,6 +1224,12 @@
         </div>
 
     </main>
+    <button type="button" class="back-to-top" x-data="{visible:window.scrollY>300}" x-cloak x-show="visible"
+        @scroll.window.throttle.100ms="visible=window.scrollY>300"
+        @click="window.scrollTo({top:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'})"
+        aria-label="回到顶部" title="回到顶部">
+        <span aria-hidden="true">↑</span><span>回到顶部</span>
+    </button>
 </div>
 
 <script>
