@@ -178,6 +178,8 @@
         .record-heading strong{display:block;font-size:13px;color:#1e293b;font-variant-numeric:tabular-nums}
         .record-heading time{display:block;font-size:11px;color:#64748b;margin-top:6px}
         .record-details{display:flex;align-items:center;gap:10px;font-size:11px;color:#64748b;flex-wrap:wrap}
+        .five-zodiac-repeat{flex-basis:100%;font-size:12px;line-height:1.7;padding:5px 9px;border-radius:6px;background:#f1f5f9;color:#475569}
+        .five-zodiac-repeat.has-triple{background:#fff7ed;color:#9a3412;font-weight:600}
         .record-special-label{color:#475569;font-weight:600}
         .draw-empty{padding:32px 16px;text-align:center;color:#64748b;font-size:13px}
         .draw-year-tabs{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 8px;margin-bottom:4px}
@@ -253,6 +255,14 @@
         .back-to-top{position:fixed;right:max(18px,env(safe-area-inset-right));bottom:calc(22px + env(safe-area-inset-bottom));z-index:45;display:flex;align-items:center;gap:6px;min-height:44px;padding:10px 14px;border:1px solid #1d4ed8;border-radius:999px;background:#2563eb;color:#fff;font-size:13px;font-weight:600;box-shadow:0 4px 14px #1e40af33;cursor:pointer}
         .back-to-top:hover{background:#1d4ed8}
         .back-to-top:focus-visible{outline:3px solid #93c5fd;outline-offset:3px}
+        .coverage-table{width:100%;min-width:1000px;border-collapse:collapse;text-align:center;font-size:12px}
+        .coverage-table th,.coverage-table td{padding:12px 7px;border:1px solid #e2e8f0}
+        .coverage-table th{background:#f8fafc;color:#475569;font-weight:600}
+        .coverage-cell{display:flex;flex-direction:column;align-items:center;gap:5px;width:100%;border-radius:6px;padding:4px;cursor:pointer}
+        .coverage-cell:hover,.coverage-cell[aria-pressed="true"]{background:#eff6ff;outline:2px solid #93c5fd}
+        .coverage-cell:focus-visible{outline:2px solid #2563eb}
+        .coverage-symbol{font-size:22px;font-weight:800;line-height:1.2}
+        .coverage-hit{color:#15803d}.coverage-miss{color:#dc2626}.coverage-unknown{color:#94a3b8}
 
         /* Mobile-specific */
         @media(max-width:640px){
@@ -614,6 +624,9 @@
                             <span x-text="d.zodiac || getZodiac(d.special)"></span>
                             <span x-text="getElement(d.special)"></span>
                             <span x-text="getHead(d.special)+'头'+getTail(d.special)+'尾'"></span>
+                            <template x-if="zodiacCountFilter===5&&getDrawZodiacCount(d)===5">
+                                <p class="five-zodiac-repeat" :class="{'has-triple':getFiveZodiacRepeatInfo(d).hasTriple}" x-text="getFiveZodiacRepeatInfo(d).text"></p>
+                            </template>
                         </div>
                     </article>
                 </template>
@@ -624,6 +637,11 @@
 
         <!-- ============ 数据分析 ============ -->
         <div x-show="activeTab==='analysis'&&!loading" x-cloak class="fade-in">
+            <div x-show="yearError" x-cloak role="alert" class="mb-4 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+                <strong>开奖记录未能加载，暂时无法计算统计。</strong>
+                <p class="mt-2" x-text="yearError"></p>
+                <button type="button" class="mt-3 rounded-lg border border-red-300 bg-white px-3 py-2 font-medium" @click="fetchDraws()" :disabled="loading">重新加载开奖记录</button>
+            </div>
             <div class="flex flex-col gap-3 mb-4 sm:mb-6">
                 <div class="flex flex-wrap items-center justify-between gap-2">
                     <div class="flex gap-1 bg-white rounded-lg border p-1">
@@ -760,6 +778,53 @@
                     <div class="h-48 sm:h-64"><canvas id="allFreqChart"></canvas></div>
                 </div>
             </div>
+
+            <section x-show="analysisTab==='previousCoverage'&&!yearError" x-cloak class="bg-white rounded-xl border p-4 sm:p-5 space-y-4" aria-label="上一期七球生肖对当期特肖的覆盖率">
+                <div>
+                    <h3 class="font-bold text-gray-800 text-sm sm:text-base">上一期七球生肖对当期特肖的覆盖率</h3>
+                    <p class="text-xs text-gray-500 mt-2" x-text="(drawSource==='oldMacau'?'老澳门':'新澳门')+' · 近'+analysisRange+'期 · 共'+previousCoverage.total+'期，有效对照'+previousCoverage.valid+'期'"></p>
+                </div>
+                <p class="text-xs sm:text-sm text-gray-600 leading-relaxed">每行从左到右列出连续10期，按期号由旧到新排列。逐期取当期第7球的生肖，与紧邻上一期的七球生肖对照：出现过记 ✓，没出现记 ×。例如264期对照263期，265期对照264期；10期里有6个✓，就写6/10（60%）。缺期或数据不完整记 —，不计入分母；不足10期按实际有效期数统计。</p>
+                <div class="flex flex-wrap gap-3 text-sm">
+                    <span class="rounded-lg bg-blue-50 text-blue-800 px-3 py-2">总覆盖率 <strong x-text="previousCoverage.label"></strong></span>
+                    <span class="rounded-lg bg-green-50 text-green-800 px-3 py-2" x-text="'✓ 已覆盖 '+previousCoverage.hits+'期'"></span>
+                    <span class="rounded-lg bg-red-50 text-red-800 px-3 py-2" x-text="'× 未覆盖 '+(previousCoverage.valid-previousCoverage.hits)+'期'"></span>
+                    <span class="rounded-lg bg-gray-100 text-gray-600 px-3 py-2" x-text="'— 无法对照 '+(previousCoverage.total-previousCoverage.valid)+'期'"></span>
+                </div>
+                <p class="text-xs text-gray-500">点击任一格可核对当期特肖与上一期七球。手机上可左右滑动表格。</p>
+                <div class="overflow-x-auto">
+                    <table class="coverage-table">
+                        <thead><tr><template x-for="column in 10" :key="'coverage-column-'+column"><th scope="col" x-text="'第'+column+'期'"></th></template><th scope="col">本行覆盖率</th></tr></thead>
+                        <tbody>
+                            <template x-for="group in previousCoverage.groups" :key="'coverage-group-'+group.start">
+                                <tr>
+                                    <template x-for="(cell,index) in group.cells" :key="'coverage-cell-'+index">
+                                        <td>
+                                            <template x-if="cell">
+                                                <button type="button" class="coverage-cell" @click="coverageSelectedPeriod=cell.period" :aria-pressed="coverageSelectedPeriod===cell.period" :aria-label="cell.description" :title="cell.description">
+                                                    <span class="font-semibold text-slate-700" x-text="cell.period"></span>
+                                                    <span class="text-gray-500" x-text="'特肖 '+(cell.zodiac||'—')"></span>
+                                                    <span class="coverage-symbol" :class="cell.hit===null?'coverage-unknown':cell.hit?'coverage-hit':'coverage-miss'" x-text="cell.hit===null?'—':cell.hit?'✓':'×'"></span>
+                                                </button>
+                                            </template>
+                                            <span x-show="!cell" class="text-gray-300">—</span>
+                                        </td>
+                                    </template>
+                                    <td class="font-bold text-blue-700" x-text="group.label"></td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+                <p x-show="!previousCoverage.total" class="text-sm text-gray-500">暂无开奖记录可统计。</p>
+                <template x-if="getSelectedCoverageEntry()">
+                    <div class="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm space-y-2" aria-live="polite">
+                        <strong x-text="getSelectedCoverageEntry().description"></strong>
+                        <p x-text="'当期第7球：'+(getSelectedCoverageEntry().special?pad(getSelectedCoverageEntry().special):'—')+' · '+(getSelectedCoverageEntry().zodiac||'—')"></p>
+                        <p x-text="'上一期七球：'+(getSelectedCoverageEntry().previousBalls.join('、')||'数据缺失')"></p>
+                    </div>
+                </template>
+            </section>
 
             <!-- ATTRIBUTES -->
             <div x-show="analysisTab==='attributes'" class="space-y-4 sm:space-y-6">
@@ -1271,6 +1336,48 @@ function deduplicateDraws(draws) {
     });
 }
 
+function computePreviousZodiacCoverage(draws,range) {
+    const rows=deduplicateDraws(draws).filter(row=>/^\d{7}$/.test(String(row.period))&&Number(String(row.period).slice(4))>0).sort((a,b)=>Number(b.period)-Number(a.period));
+    const byPeriod=new Map(rows.map(row=>[String(row.period),row]));
+    const label=(hits,valid)=>valid?hits+'/'+valid+'（'+Math.round(hits/valid*1000)/10+'%）':'—（无有效对照）';
+    const entries=rows.slice(0,range).reverse().map(row=>{
+        const period=String(row.period),year=Number(period.slice(0,4));
+        let previous=byPeriod.get(String(Number(period)-1));
+        // Across New Year, use the actual Dec 31 record rather than guessing 365/366 issues.
+        if(period.slice(4)==='001')previous=rows.find(candidate=>String(candidate.period).slice(0,4)===String(year-1)&&String(candidate.date).slice(0,10)===(year-1)+'-12-31'&&String(row.date).slice(0,10)===year+'-01-01');
+        const zodiac=ZODIAC_CYCLE.includes(row.zodiac)?row.zodiac:'';
+        const previousZodiacs=previous&&Array.isArray(previous.normal_zodiacs)?[...previous.normal_zodiacs,previous.zodiac]:[];
+        const numbers=previous&&Array.isArray(previous.numbers)?[...previous.numbers,previous.special]:[];
+        const complete=numbers.length===7&&new Set(numbers).size===7&&numbers.every(n=>Number.isInteger(n)&&n>=1&&n<=49)&&previousZodiacs.length===7&&previousZodiacs.every(z=>ZODIAC_CYCLE.includes(z));
+        let reason='';
+        if(!previous)reason='缺少紧邻上一期';
+        else if(!complete)reason='上一期七球数据不完整';
+        else if(!zodiac||!Number.isInteger(row.special)||row.special<1||row.special>49)reason='当期特肖数据不完整';
+        const hit=reason?null:previousZodiacs.includes(zodiac);
+        const previousPeriod=previous?String(previous.period):'';
+        const previousBalls=complete?numbers.map((n,index)=>pad(n)+previousZodiacs[index]+(index===6?'（特）':'')):[];
+        return {period,date:row.date,zodiac,special:row.special,previousPeriod,previousBalls,hit,reason,
+            description:period+'期对照'+(previousPeriod||'上一期')+'：'+(reason||('特肖'+zodiac+(hit?'已出现 ✓':'未出现 ×')))};
+    });
+    const groups=[];
+    let chunk=[];
+    const flush=()=>{
+        if(!chunk.length)return;
+        const valid=chunk.filter(cell=>cell.hit!==null).length,hits=chunk.filter(cell=>cell.hit===true).length;
+        groups.push({start:chunk[0].period,cells:[...chunk,...Array(10-chunk.length).fill(null)],hits,valid,label:label(hits,valid)});
+        chunk=[];
+    };
+    for(const entry of entries){
+        const last=chunk[chunk.length-1];
+        const adjacent=!last||(entry.previousPeriod===last.period);
+        if(chunk.length===10||!adjacent)flush();
+        chunk.push(entry);
+    }
+    flush();
+    const valid=entries.filter(cell=>cell.hit!==null).length,hits=entries.filter(cell=>cell.hit===true).length;
+    return {entries,groups,total:entries.length,valid,hits,label:label(hits,valid)};
+}
+
 function renderMd(text) {
     if(!text)return '';
     let h=text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -1335,8 +1442,9 @@ function app() {
         analysisSelectedPeriods:[], analysisDetailsOpen:false, analysisScope:'year', analysisMatchMode:'sequence', tripleRunOpen:false, tripleRunMode:'selected', tripleRunExpandedKey:'',
         analysisAllLoading:false, analysisAllError:'', analysisHistoryVersion:0,
         analysisTab:'overview',
-        analysisTabs:[{id:'overview',name:'总览'},{id:'frequency',name:'频率'},{id:'attributes',name:'属性'}],
+        analysisTabs:[{id:'overview',name:'总览'},{id:'frequency',name:'频率'},{id:'attributes',name:'属性'},{id:'previousCoverage',name:'上期覆盖'}],
         analysisRange:50, analysis:null,
+        previousCoverage:computePreviousZodiacCoverage([],50), coverageSelectedPeriod:'',
 
         // AI
         aiModels:[{id:'Qwen/Qwen2.5-7B-Instruct',name:'通义千问 2.5-7B'}],
@@ -1448,7 +1556,7 @@ function app() {
         async init() { await this.fetchDraws(); this.fetchModels(); },
 
         async fetchDraws() {
-            this.loading=true;
+            this.loading=true;this.yearError='';
             try {
                 await this.loadDrawSource(this.drawSource);
             } catch(e){this.dataSource=e.message||'开奖记录连接失败';this.yearError=this.dataSource;}
@@ -1856,6 +1964,23 @@ function app() {
             const set=this.getDrawZodiacSet(d);
             return set.size||null;
         },
+        getFiveZodiacRepeatInfo(d) {
+            if(this.getDrawZodiacCount(d)!==5)return {hasTriple:false,text:''};
+            const groups=new Map();
+            [...d.numbers,d.special].forEach((number,index)=>{
+                const zodiac=this.getRecordZodiac(number,d);
+                if(!groups.has(zodiac))groups.set(zodiac,[]);
+                groups.get(zodiac).push((index===6?'特':'')+pad(number));
+            });
+            const repeated=[...groups].filter(([,numbers])=>numbers.length>1)
+                .sort((a,b)=>b[1].length-a[1].length||this.zodiacList.indexOf(a[0])-this.zodiacList.indexOf(b[0]));
+            const triples=repeated.filter(([,numbers])=>numbers.length===3);
+            const describe=([zodiac,numbers])=>zodiac+'开了'+numbers.length+'个：'+numbers.join('、');
+            return {
+                hasTriple:triples.length>0,
+                text:triples.length?triples.map(describe).join('；'):'没有生肖开3个；'+repeated.map(describe).join('；'),
+            };
+        },
         getZodiacCountStats() {
             const counts={2:0,3:0,4:0,5:0,6:0,7:0}, seen=new Set(), periods=[];
             for(const d of this.getYearDraws()){
@@ -1893,7 +2018,14 @@ function app() {
             if(!this.zodiacFilters.length)return '';
             return this.zodiacFilters.includes(d?this.getRecordZodiac(n,d):getZodiac(n))?'zodiac-hit':'zodiac-dim';
         },
-        updateAnalysis() { this.analysis=computeAnalysis(this.draws,this.analysisRange); },
+        updateAnalysis() {
+            this.analysis=computeAnalysis(this.draws,this.analysisRange);
+            this.previousCoverage=computePreviousZodiacCoverage(this.draws,this.analysisRange);
+            this.coverageSelectedPeriod='';
+        },
+        getSelectedCoverageEntry() {
+            return this.previousCoverage.entries.find(entry=>entry.period===this.coverageSelectedPeriod)||null;
+        },
 
         toggleNumber(n) {
             const i=this.selectedNumbers.indexOf(n);
