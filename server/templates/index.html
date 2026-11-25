@@ -656,7 +656,7 @@
                         <template x-for="r in [20,50,100]" :key="'r'+r">
                             <button @click="analysisRange=r;updateAnalysis();$nextTick(()=>renderCharts())"
                                 :class="analysisRange===r?'bg-blue-500 text-white':'bg-white text-gray-600 hover:bg-gray-100'"
-                                class="px-2.5 sm:px-3 py-1 rounded border text-xs sm:text-sm transition-all" x-text="'近'+r+'期'"></button>
+                                class="px-2.5 sm:px-3 py-1 rounded border text-xs sm:text-sm transition-all" x-text="analysisTab==='previousCoverage'?'最近'+(r/10)+'组':'近'+r+'期'"></button>
                         </template>
                     </div>
                 </div>
@@ -782,11 +782,12 @@
             <section x-show="analysisTab==='previousCoverage'&&!yearError" x-cloak class="bg-white rounded-xl border p-4 sm:p-5 space-y-4" aria-label="上一期七球生肖对当期特肖的覆盖率">
                 <div>
                     <h3 class="font-bold text-gray-800 text-sm sm:text-base">上一期七球生肖对当期特肖的覆盖率</h3>
-                    <p class="text-xs text-gray-500 mt-2" x-text="(drawSource==='oldMacau'?'老澳门':'新澳门')+' · 近'+analysisRange+'期 · 共'+previousCoverage.total+'期，有效对照'+previousCoverage.valid+'期'"></p>
+                    <p class="text-xs text-gray-500 mt-2" x-text="(drawSource==='oldMacau'?'老澳门':'新澳门')+' · 最近'+Math.ceil(analysisRange/10)+'个固定组（最多'+analysisRange+'期） · 已展示'+previousCoverage.total+'期，有效对照'+previousCoverage.valid+'期'"></p>
                 </div>
-                <p class="text-xs sm:text-sm text-gray-600 leading-relaxed">每行从左到右列出连续10期，按期号由旧到新排列。逐期取当期第7球的生肖，与紧邻上一期的七球生肖对照：出现过记 ✓，没出现记 ×。例如264期对照263期，265期对照264期；10期里有6个✓，就写6/10（60%）。缺期或数据不完整记 —，不计入分母；不足10期按实际有效期数统计。</p>
+                <p class="text-xs sm:text-sm text-gray-600 leading-relaxed">每年按固定期号分组：001—010、011—020，以此类推，例如261—270、271—280。切换最近2／5／10组只改变显示范围，不重新分组。每格用当期第7球生肖对照紧邻上一期七球，出现记 ✓，未出现记 ×。每组10期有6个✓就是6/10（60%）；缺期或数据不完整不计入分母。最新组未满10期时按实际有效期数统计，后续开奖会继续更新。这是历史覆盖率，不是下一期中奖概率。</p>
                 <div class="flex flex-wrap gap-3 text-sm">
-                    <span class="rounded-lg bg-blue-50 text-blue-800 px-3 py-2">总覆盖率 <strong x-text="previousCoverage.label"></strong></span>
+                    <span class="rounded-lg bg-indigo-50 text-indigo-800 px-3 py-2">全部已加载历史覆盖率 <strong x-text="previousCoverage.history.label"></strong><span class="block text-xs mt-1" x-text="'共'+previousCoverage.history.total+'期 · 不随显示组数切换'"></span></span>
+                    <span class="rounded-lg bg-blue-50 text-blue-800 px-3 py-2">当前显示范围覆盖率 <strong x-text="previousCoverage.label"></strong></span>
                     <span class="rounded-lg bg-green-50 text-green-800 px-3 py-2" x-text="'✓ 已覆盖 '+previousCoverage.hits+'期'"></span>
                     <span class="rounded-lg bg-red-50 text-red-800 px-3 py-2" x-text="'× 未覆盖 '+(previousCoverage.valid-previousCoverage.hits)+'期'"></span>
                     <span class="rounded-lg bg-gray-100 text-gray-600 px-3 py-2" x-text="'— 无法对照 '+(previousCoverage.total-previousCoverage.valid)+'期'"></span>
@@ -794,7 +795,7 @@
                 <p class="text-xs text-gray-500">点击任一格可核对当期特肖与上一期七球。手机上可左右滑动表格。</p>
                 <div class="overflow-x-auto">
                     <table class="coverage-table">
-                        <thead><tr><template x-for="column in 10" :key="'coverage-column-'+column"><th scope="col" x-text="'第'+column+'期'"></th></template><th scope="col">本行覆盖率</th></tr></thead>
+                        <thead><tr><template x-for="column in 10" :key="'coverage-column-'+column"><th scope="col" x-text="'组内第'+column+'期'"></th></template><th scope="col">固定组覆盖率</th></tr></thead>
                         <tbody>
                             <template x-for="group in previousCoverage.groups" :key="'coverage-group-'+group.start">
                                 <tr>
@@ -807,10 +808,10 @@
                                                     <span class="coverage-symbol" :class="cell.hit===null?'coverage-unknown':cell.hit?'coverage-hit':'coverage-miss'" x-text="cell.hit===null?'—':cell.hit?'✓':'×'"></span>
                                                 </button>
                                             </template>
-                                            <span x-show="!cell" class="text-gray-300">—</span>
+                                            <span x-show="!cell" class="text-gray-400" :title="group.periods[index]==='—'?'本年无此期号':'第'+group.periods[index]+'期暂无数据'"><span class="block text-xs" x-text="group.periods[index]"></span>—</span>
                                         </td>
                                     </template>
-                                    <td class="font-bold text-blue-700" x-text="group.label"></td>
+                                    <td class="text-blue-700"><span class="block text-xs text-gray-500 mb-1" x-text="group.start+'—'+group.end"></span><strong x-text="group.label"></strong></td>
                                 </tr>
                             </template>
                         </tbody>
@@ -1337,10 +1338,16 @@ function deduplicateDraws(draws) {
 }
 
 function computePreviousZodiacCoverage(draws,range) {
-    const rows=deduplicateDraws(draws).filter(row=>/^\d{7}$/.test(String(row.period))&&Number(String(row.period).slice(4))>0).sort((a,b)=>Number(b.period)-Number(a.period));
+    const rows=deduplicateDraws(draws).filter(row=>{
+        const period=String(row.period);
+        if(!/^\d{7}$/.test(period))return false;
+        const year=Number(period.slice(0,4)),issue=Number(period.slice(4));
+        const last=new Date(Date.UTC(year,1,29)).getUTCMonth()===1?366:365;
+        return issue>0&&issue<=last;
+    }).sort((a,b)=>Number(b.period)-Number(a.period));
     const byPeriod=new Map(rows.map(row=>[String(row.period),row]));
     const label=(hits,valid)=>valid?hits+'/'+valid+'（'+Math.round(hits/valid*1000)/10+'%）':'—（无有效对照）';
-    const entries=rows.slice(0,range).reverse().map(row=>{
+    const allEntries=[...rows].reverse().map(row=>{
         const period=String(row.period),year=Number(period.slice(0,4));
         let previous=byPeriod.get(String(Number(period)-1));
         // Across New Year, use the actual Dec 31 record rather than guessing 365/366 issues.
@@ -1359,23 +1366,26 @@ function computePreviousZodiacCoverage(draws,range) {
         return {period,date:row.date,zodiac,special:row.special,previousPeriod,previousBalls,hit,reason,
             description:period+'期对照'+(previousPeriod||'上一期')+'：'+(reason||('特肖'+zodiac+(hit?'已出现 ✓':'未出现 ×')))};
     });
-    const groups=[];
-    let chunk=[];
-    const flush=()=>{
-        if(!chunk.length)return;
-        const valid=chunk.filter(cell=>cell.hit!==null).length,hits=chunk.filter(cell=>cell.hit===true).length;
-        groups.push({start:chunk[0].period,cells:[...chunk,...Array(10-chunk.length).fill(null)],hits,valid,label:label(hits,valid)});
-        chunk=[];
-    };
-    for(const entry of entries){
-        const last=chunk[chunk.length-1];
-        const adjacent=!last||(entry.previousPeriod===last.period);
-        if(chunk.length===10||!adjacent)flush();
-        chunk.push(entry);
+    const fixedGroups=new Map();
+    for(const entry of allEntries){
+        const year=entry.period.slice(0,4),issue=Number(entry.period.slice(4));
+        const first=Math.floor((issue-1)/10)*10+1,start=year+String(first).padStart(3,'0');
+        if(!fixedGroups.has(start)){
+            const last=Math.min(first+9,(new Date(Date.UTC(Number(year),1,29)).getUTCMonth()===1?366:365));
+            fixedGroups.set(start,{start,end:year+String(last).padStart(3,'0'),cells:Array(10).fill(null),
+                periods:Array.from({length:10},(_,i)=>i+first<=last?year+String(first+i).padStart(3,'0'):'—')});
+        }
+        fixedGroups.get(start).cells[issue-first]=entry;
     }
-    flush();
+    const groups=[...fixedGroups.values()].slice(-Math.max(1,Math.ceil(range/10))).map(group=>{
+        const valid=group.cells.filter(cell=>cell&&cell.hit!==null).length,hits=group.cells.filter(cell=>cell?.hit===true).length;
+        return {...group,hits,valid,label:label(hits,valid)};
+    });
+    const entries=groups.flatMap(group=>group.cells.filter(Boolean));
     const valid=entries.filter(cell=>cell.hit!==null).length,hits=entries.filter(cell=>cell.hit===true).length;
-    return {entries,groups,total:entries.length,valid,hits,label:label(hits,valid)};
+    const historyValid=allEntries.filter(cell=>cell.hit!==null).length,historyHits=allEntries.filter(cell=>cell.hit===true).length;
+    return {entries,groups,total:entries.length,valid,hits,label:label(hits,valid),
+        history:{total:allEntries.length,valid:historyValid,hits:historyHits,label:label(historyHits,historyValid)}};
 }
 
 function renderMd(text) {
